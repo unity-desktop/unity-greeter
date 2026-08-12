@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/unity/Greeter">
+    <file compressed="true" preprocess="xml-stripblanks">unity-greeter.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="unity-greeter-user-card.ui">components/unity-greeter-user-card.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="unity-greeter-user-page.ui">components/unity-greeter-user-page.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="unity-greeter-session-dialog.ui">components/unity-greeter-session-dialog.ui</file>
+    <file compressed="true">style.css</file>
+  </gresource>
+</gresources>

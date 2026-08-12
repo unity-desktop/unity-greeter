@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="UnityGreeter" parent="AdwApplicationWindow">
+    <property name="title" translatable="yes">Unity Greeter</property>
+    <property name="default-width">800</property>
+    <property name="default-height">600</property>
+    <property name="content">
+      <object class="AdwNavigationView" id="nav">
+        <child>
+          <object class="AdwNavigationPage">
+            <property name="tag">users</property>
+            <property name="title" translatable="yes">Users</property>
+            <property name="child">
+              <object class="AdwToolbarView">
+                <property name="content">
+                  <object class="GtkScrolledWindow">
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="child">
+                      <object class="AdwWrapBox" id="cards">
+                        <property name="align">0.5</property>
+                        <property name="child-spacing">24</property>
+                        <property name="line-spacing">24</property>
+                        <property name="margin-top">24</property>
+                        <property name="margin-bottom">24</property>
+                        <property name="margin-start">24</property>
+                        <property name="margin-end">24</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="vexpand">true</property>
+                        <property name="hexpand">true</property>
+                        <accessibility>
+                          <property name="label" translatable="yes">Users</property>
+                        </accessibility>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
+    </property>
+  </template>
+</interface>
