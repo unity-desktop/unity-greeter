@@ -41,3 +41,11 @@ executable(
   install:             true,
   install_dir:         bindir,
 )
+
+executable(
+  'unity-greeter-session',
+  'unity-greeter-session.c',
+  dependencies: [dep_glib, dep_gio],
+  install:      true,
+  install_dir:  bindir,
+)

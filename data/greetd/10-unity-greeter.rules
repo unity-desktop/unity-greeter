@@ -1,0 +1,7 @@
+polkit.addRule(function (action, subject) {
+    if (subject.user === "greetd" &&
+        (action.id === "org.freedesktop.accounts.set-login-option" ||
+         action.id === "org.freedesktop.accounts.user-administration")) {
+        return polkit.Result.YES;
+    }
+});
