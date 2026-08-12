@@ -1,0 +1,9 @@
+:root {
+  --accent-bg-color: rgb(255 255 255 / 75%);
+  --accent-fg-color: rgb(0 0 0 / 75%);
+  --accent-color: rgb(255 255 255 / 75%);
+}
+
+row.body .title {
+  font-weight: normal;
+}

@@ -1,0 +1,7 @@
+#pragma once
+
+/* Per-user asset root written by unity-shell and read by unity-greeter.
+ * unity-shell writes background.png, card.png and phoc.ini into a
+ * subdirectory keyed by user name. Contract shared with unity-shell —
+ * both projects must agree on this path. */
+#define UNITY_GREETER_MIRROR_ROOT  "@mirror_root@"
