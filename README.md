@@ -1,8 +1,13 @@
 ## unity-greeter
 
-greeter app for unity-desktop session login.
+greeter for unity-desktop using `greetd` via `astal-greet`
 
-It is built on GTK 4, Libadwaita, AccountsService, and Astal Greet.
+### screenshots
+
+| desktop form-factor| mobile form-factor |
+| ------------------ | ------------------ |
+| ![user list](.github/screenshots/user-list-landscape.jpg) | ![user list-portrait](.github/screenshots/user-list-portrait.png) |
+| ![login prompt](.github/screenshots/login-prompt-landscape.jpg) | ![login prompt-portrait](.github/screenshots/login-prompt-portrait.png) |
 
 **components**
 
