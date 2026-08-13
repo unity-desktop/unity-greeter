@@ -47,20 +47,13 @@ main (gint argc, gchar *argv[])
 
   g_autofree gchar *config = newest_phoc_config ();
 
-  const gchar *phoc_argv[8];
-  gint         i = 0;
-  phoc_argv[i++] = "phoc";
   if (config != NULL)
-    {
-      phoc_argv[i++] = "-C";
-      phoc_argv[i++] = config;
-    }
-  phoc_argv[i++] = "--no-xwayland";
-  phoc_argv[i++] = "-E";
-  phoc_argv[i++] = "unity-greeter";
-  phoc_argv[i]   = NULL;
+    execlp ("phoc", "phoc", "-C", config,
+            "--no-xwayland", "-E", "unity-greeter", (gchar *) NULL);
+  else
+    execlp ("phoc", "phoc",
+            "--no-xwayland", "-E", "unity-greeter", (gchar *) NULL);
 
-  execvp (phoc_argv[0], (gchar *const *) phoc_argv);
   g_printerr ("unity-greeter-session: exec phoc: %s\n", g_strerror (errno));
   return EXIT_FAILURE;
 }
