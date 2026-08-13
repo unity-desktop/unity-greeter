@@ -1,7 +1,7 @@
 :root {
-  --accent-bg-color: rgb(255 255 255 / 75%);
-  --accent-fg-color: rgb(0 0 0 / 75%);
-  --accent-color: rgb(255 255 255 / 75%);
+  --accent-bg-color: var(--light-1);
+  --accent-fg-color: var(--dark-1);
+  --accent-color: var(--light-1);
 }
 
 row.body .title {
