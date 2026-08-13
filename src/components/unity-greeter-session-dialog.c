@@ -33,7 +33,7 @@ on_check_toggled (GtkCheckButton *check, gpointer user_data)
 static void
 populate (UnityGreeterSessionDialog *self,
           GListModel                *sessions,
-          const char                *selected_id)
+          const gchar                *selected_id)
 {
   GtkCheckButton *radio_root = NULL;
   guint n = g_list_model_get_n_items (sessions);

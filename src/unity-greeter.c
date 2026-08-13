@@ -2,6 +2,7 @@
 
 #include <glib/gi18n.h>
 
+#include "unity-greeter-idle.h"
 #include "unity-greeter-user-card.h"
 #include "unity-greeter-user-page.h"
 
@@ -110,8 +111,10 @@ unity_greeter_new (GtkApplication *app,
   self->sessions = g_object_ref (sessions);
 
   g_signal_connect_object (self->users, "items-changed",
-                           G_CALLBACK (on_users_changed), self, 0);
+                           G_CALLBACK (on_users_changed), self, G_CONNECT_DEFAULT);
   sync_cards (self);
+
+  unity_greeter_idle_watch (GTK_WINDOW (self));
 
   return self;
 }

@@ -18,7 +18,15 @@ dep_glib       = dependency('glib-2.0',        version: '>= 2.76')
 dep_graphene   = dependency('graphene-1.0')
 dep_json       = dependency('json-glib-1.0')
 dep_act        = dependency('accountsservice', version: '>= 23.13.9')
-dep_astalgreet = dependency('astal-greet-0.1')
+dep_astalgreet  = dependency('astal-greet-0.1')
+dep_astallogind = dependency('astal-logind-0.1')
+dep_wayland     = dependency('wayland-client')
+
+wayland_scanner_dep = dependency('wayland-scanner', native: true)
+wayland_scanner = find_program(
+  wayland_scanner_dep.get_variable(pkgconfig: 'wayland_scanner'),
+  native: true,
+)
 
 gnome = import('gnome')
 i18n  = import('i18n')

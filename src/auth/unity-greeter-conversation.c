@@ -104,20 +104,19 @@ unity_greeter_conversation_begin (UnityGreeterConversation *self,
   drop_greeter (self);
   self->greeter = astal_greet_greeter_new ();
   g_signal_connect_object (self->greeter, "visible-request",
-                           G_CALLBACK (on_visible_request), self, 0);
+                           G_CALLBACK (on_visible_request), self, G_CONNECT_DEFAULT);
   g_signal_connect_object (self->greeter, "secret-request",
-                           G_CALLBACK (on_secret_request), self, 0);
+                           G_CALLBACK (on_secret_request), self, G_CONNECT_DEFAULT);
   g_signal_connect_object (self->greeter, "info-message",
-                           G_CALLBACK (on_info_message), self, 0);
+                           G_CALLBACK (on_info_message), self, G_CONNECT_DEFAULT);
   g_signal_connect_object (self->greeter, "error-message",
-                           G_CALLBACK (on_error_message), self, 0);
+                           G_CALLBACK (on_error_message), self, G_CONNECT_DEFAULT);
   g_signal_connect_object (self->greeter, "authenticated",
-                           G_CALLBACK (on_authenticated), self, 0);
+                           G_CALLBACK (on_authenticated), self, G_CONNECT_DEFAULT);
   g_signal_connect_object (self->greeter, "cancelled",
-                           G_CALLBACK (on_cancelled), self, 0);
+                           G_CALLBACK (on_cancelled), self, G_CONNECT_DEFAULT);
 
-  g_free (self->username);
-  self->username = g_strdup (username);
+  g_set_str (&self->username, username);
 
   astal_greet_greeter_create_session (self->greeter, self->username);
 }

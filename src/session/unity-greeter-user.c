@@ -146,7 +146,7 @@ unity_greeter_users_new (void)
                           manager, g_object_unref);
 
   g_signal_connect_object (manager, "notify::is-loaded",
-                           G_CALLBACK (on_manager_notify_loaded), store, 0);
+                           G_CALLBACK (on_manager_notify_loaded), store, G_CONNECT_DEFAULT);
 
   on_manager_notify_loaded (G_OBJECT (manager), NULL, store);
 

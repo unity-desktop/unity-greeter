@@ -123,8 +123,7 @@ submit (UnityGreeterUserPage *self)
       return;
     }
 
-  g_free (self->pending);
-  self->pending = g_strdup (text);
+  g_set_str (&self->pending, text);
   self->started = TRUE;
   unity_greeter_conversation_begin (self->conversation,
     unity_greeter_user_get_user_name (self->user));
@@ -140,8 +139,7 @@ on_session_picked (UnityGreeterSessionDialog *dialog,
 {
   (void) dialog;
   UnityGreeterUserPage *self = user_data;
-  g_free (self->selected_session);
-  self->selected_session = g_strdup (id);
+  g_set_str (&self->selected_session, id);
 }
 
 static void
@@ -411,7 +409,7 @@ unity_greeter_user_page_new (UnityGreeterUser *user, GListModel *sessions)
   GdkDevice  *kbd     = seat    != NULL ? gdk_seat_get_keyboard (seat) : NULL;
   if (kbd != NULL)
     g_signal_connect_object (kbd, "notify::caps-lock-state",
-                             G_CALLBACK (on_caps_lock_changed), self, 0);
+                             G_CALLBACK (on_caps_lock_changed), self, G_CONNECT_DEFAULT);
 
   self->conversation = unity_greeter_conversation_new ();
   g_signal_connect (self->conversation, "prompt",        G_CALLBACK (on_prompt),        self);
