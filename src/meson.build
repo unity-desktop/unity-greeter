@@ -7,6 +7,7 @@ unity_greeter_deps = [
   dep_graphene,
   dep_json,
   dep_act,
+  dep_astal4,
   dep_astalgreet,
   dep_astallogind,
   dep_wayland,

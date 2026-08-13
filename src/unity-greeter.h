@@ -1,8 +1,7 @@
 #pragma once
 
-#include <adwaita.h>
+#include <astal-4.h>
 #include <gio/gio.h>
-#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -16,10 +15,11 @@ G_BEGIN_DECLS
 /**
  * UnityGreeter:
  *
- * Main greeter window that presents users and available sessions.
+ * The greeter shell surface. A layer-shell overlay covering the whole
+ * display and grabbing exclusive keyboard input.
  */
 G_DECLARE_FINAL_TYPE (UnityGreeter, unity_greeter,
-                      UNITY, GREETER, AdwApplicationWindow)
+                      UNITY, GREETER, AstalWindow)
 
 /**
  * unity_greeter_new:
@@ -27,7 +27,7 @@ G_DECLARE_FINAL_TYPE (UnityGreeter, unity_greeter,
  * @users: list model containing #UnityGreeterUser objects.
  * @sessions: list model containing #UnityGreeterSession objects.
  *
- * Creates the greeter window.
+ * Creates the greeter shell surface.
  *
  * Returns: (transfer full): a new #UnityGreeter instance.
  */
