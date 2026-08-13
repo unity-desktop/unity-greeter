@@ -10,7 +10,6 @@ struct _UnityGreeterApp
 {
   AdwApplication parent_instance;
 
-  gboolean    demo;
   GListModel *users;
   GListModel *sessions;
 };
@@ -79,19 +78,9 @@ unity_greeter_app_activate (GApplication *application)
 {
   UnityGreeterApp *self = UNITY_GREETER_APP (application);
 
-  GtkWindow *existing =
-    gtk_application_get_active_window (GTK_APPLICATION (self));
-  if (existing != NULL)
-    {
-      gtk_window_present (existing);
-      return;
-    }
-
   UnityGreeter *window = unity_greeter_new (GTK_APPLICATION (self),
                                             self->users, self->sessions);
   gtk_window_present (GTK_WINDOW (window));
-  if (!self->demo)
-    gtk_window_fullscreen (GTK_WINDOW (window));
 }
 
 static void
@@ -123,12 +112,10 @@ unity_greeter_app_init (UnityGreeterApp *self)
 }
 
 UnityGreeterApp *
-unity_greeter_app_new (gboolean demo)
+unity_greeter_app_new (void)
 {
-  UnityGreeterApp *self = g_object_new (UNITY_GREETER_TYPE_APP,
-                                        "application-id",     "org.unity.Greeter",
-                                        "resource-base-path", "/org/unity/Greeter",
-                                        NULL);
-  self->demo = demo;
-  return self;
+  return g_object_new (UNITY_GREETER_TYPE_APP,
+                       "application-id",     "org.unity.Greeter",
+                       "resource-base-path", "/org/unity/Greeter",
+                       NULL);
 }

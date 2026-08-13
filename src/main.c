@@ -9,13 +9,9 @@
 gint
 main (gint argc, gchar *argv[])
 {
-  gboolean demo = FALSE;
-  for (gint i = 1; i < argc; i++)
-    if (g_str_equal (argv[i], "--demo"))
-      demo = TRUE;
+  (void) argc;
 
-  if (!demo)
-    g_log_set_writer_func (g_log_writer_journald, NULL, NULL);
+  g_log_set_writer_func (g_log_writer_journald, NULL, NULL);
 
   setlocale (LC_ALL, "");
   bindtextdomain (GETTEXT_PACKAGE, UNITY_GREETER_LOCALEDIR);
@@ -24,7 +20,7 @@ main (gint argc, gchar *argv[])
 
   g_set_application_name (_("Unity Greeter"));
 
-  g_autoptr (UnityGreeterApp) app = unity_greeter_app_new (demo);
+  g_autoptr (UnityGreeterApp) app = unity_greeter_app_new ();
 
   gchar *forwarded[] = { argv[0], NULL };
   return g_application_run (G_APPLICATION (app), 1, forwarded);

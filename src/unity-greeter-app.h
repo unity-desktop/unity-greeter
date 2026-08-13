@@ -21,12 +21,11 @@ G_DECLARE_FINAL_TYPE (UnityGreeterApp, unity_greeter_app,
 
 /**
  * unity_greeter_app_new:
- * @demo: whether to run the application in demo mode.
  *
  * Creates a new #UnityGreeterApp instance.
  *
  * Returns: (transfer full): a new #UnityGreeterApp.
  */
-UnityGreeterApp *unity_greeter_app_new (gboolean demo);
+UnityGreeterApp *unity_greeter_app_new (void);
 
 G_END_DECLS
