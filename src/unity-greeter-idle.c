@@ -113,9 +113,9 @@ static const struct ext_idle_notification_v1_listener suspend_listener = {
 static void
 on_registry_global (void               *data,
                     struct wl_registry *registry,
-                    uint32_t            name,
-                    const char         *interface,
-                    uint32_t            version)
+                    guint32            name,
+                    const gchar         *interface,
+                    guint32            version)
 {
   Idle *idle = data;
 
@@ -131,7 +131,7 @@ on_registry_global (void               *data,
 }
 
 static void
-on_registry_global_remove (void *data, struct wl_registry *r, uint32_t name)
+on_registry_global_remove (void *data, struct wl_registry *r, guint32 name)
 {
   (void) data; (void) r; (void) name;
 }

@@ -1,8 +1,8 @@
 #include "unity-greeter-app.h"
 
-#include "unity-greeter.h"
 #include "unity-greeter-session-list.h"
 #include "unity-greeter-user.h"
+#include "unity-greeter.h"
 
 #define INTERFACE_SCHEMA "org.gnome.desktop.interface"
 
@@ -42,7 +42,7 @@ apply_appearance (void)
 
   if (schema == NULL)
     {
-      g_message ("%s not installed, skipping appearance", INTERFACE_SCHEMA);
+      g_warning ("%s not installed, skipping appearance", INTERFACE_SCHEMA);
       return;
     }
 

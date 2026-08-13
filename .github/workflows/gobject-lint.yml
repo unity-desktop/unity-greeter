@@ -1,0 +1,26 @@
+name: GObject Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/bilelmoussaoui/gobject-linter:latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run gobject-linter
+        run: gobject-linter --format sarif > gobject-linter.sarif
+
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: gobject-linter.sarif
+          category: gobject-linter

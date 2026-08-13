@@ -1,8 +1,8 @@
 #include <locale.h>
 
+#include <gio/gio.h>
 #include <glib.h>
 #include <glib/gi18n.h>
-#include <gio/gio.h>
 
 #include "unity-greeter-app.h"
 
