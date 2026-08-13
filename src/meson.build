@@ -21,7 +21,6 @@ unity_greeter_defs = configure_file(
 
 unity_greeter_sources = files(
   'main.c',
-  'unity-greeter-app.c',
   'unity-greeter.c',
   'unity-greeter-idle.c',
 )
