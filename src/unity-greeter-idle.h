@@ -28,15 +28,19 @@ G_BEGIN_DECLS
  * unity_greeter_idle_watch:
  * @window: the greeter's root window.
  *
- * Registers two idle notifications on the seat via `ext-idle-notify-v1`.
- * At 30 s of inactivity the window gets an `idle-dim` CSS class so a
- * translucent overlay fades in. At 2 min the compositor is asked to
- * power every output off via `wlr-output-power-management`. Any input
- * reverses both.
+ * Starts watching the seat for inactivity and reacts in two steps.
  *
- * A no-op on non-Wayland displays or on compositors that lack
- * `ext-idle-notify-v1`. The output-power step degrades gracefully if
- * that protocol is missing.
+ * After 2 minutes of no input the greeter asks the compositor to power
+ * every output off. Any input turns the outputs back on.
+ *
+ * After 3 minutes of no input the greeter asks logind to suspend the
+ * machine.
+ *
+ * The output step needs the compositor to support
+ * `wlr-output-power-management-unstable-v1`. On a compositor without
+ * this protocol the greeter still suspends after 3 minutes but the
+ * outputs stay on. The whole watcher does nothing on a compositor
+ * without `ext-idle-notify-v1`.
  */
 void unity_greeter_idle_watch (GtkWindow *window);
 

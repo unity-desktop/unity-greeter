@@ -9,7 +9,8 @@ unity_greeter_deps = [
   dep_act,
   dep_astalgreet,
   dep_astallogind,
-  dep_wayland,
+  dep_astalwl,
+  dep_astalwlr,
 ]
 
 unity_greeter_defs = configure_file(
@@ -23,24 +24,6 @@ unity_greeter_sources = files(
   'unity-greeter.c',
   'unity-greeter-idle.c',
 )
-
-wp_dir  = dependency('wayland-protocols').get_variable(pkgconfig: 'pkgdatadir')
-wlr_dir = dependency('wlr-protocols').get_variable(pkgconfig: 'pkgdatadir')
-
-wayland_protocols = [
-  ['ext-idle-notify-v1',                      wp_dir  / 'staging/ext-idle-notify/ext-idle-notify-v1.xml'],
-  ['wlr-output-power-management-unstable-v1', wlr_dir / 'unstable/wlr-output-power-management-unstable-v1.xml'],
-]
-
-wayland_generated = []
-foreach p : wayland_protocols
-  wayland_generated += custom_target(p[0] + '-client-header',
-    input: p[1], output: p[0] + '-client-protocol.h',
-    command: [wayland_scanner, 'client-header', '@INPUT@', '@OUTPUT@'])
-  wayland_generated += custom_target(p[0] + '-code',
-    input: p[1], output: p[0] + '-protocol.c',
-    command: [wayland_scanner, 'private-code', '@INPUT@', '@OUTPUT@'])
-endforeach
 
 subdir('auth')
 subdir('session')
@@ -56,7 +39,6 @@ executable(
   'unity-greeter',
   unity_greeter_sources,
   unity_greeter_resources,
-  wayland_generated,
   dependencies:        unity_greeter_deps,
   include_directories: include_directories('.', 'auth', 'session', 'components'),
   install:             true,
