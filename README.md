@@ -27,7 +27,7 @@ install the deps:
 - `gio-2.0`, `gio-unix-2.0`, `glib-2.0` (>= 2.76)
 - `graphene-1.0`, `json-glib-1.0`
 - `accountsservice` (>= 23.13.9)
-- `astal-4-4.0`, `astal-greet-0.1`, `astal-logind-0.1`
+- `astal-greet-0.1`, `astal-logind-0.1`
 - `wayland-client`, `wayland-protocols`, `wlr-protocols`, `wayland-scanner`
 - `meson`, `ninja`
 

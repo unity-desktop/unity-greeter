@@ -2,13 +2,11 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
-  <template class="UnityGreeter" parent="AstalWindow">
-    <property name="namespace">unity-greeter</property>
-    <property name="layer">overlay</property>
-    <property name="anchor">top|bottom|left|right</property>
-    <property name="exclusivity">ignore</property>
-    <property name="keymode">exclusive</property>
-    <property name="child">
+  <template class="UnityGreeter" parent="AdwApplicationWindow">
+    <property name="title" translatable="yes">Unity Greeter</property>
+    <property name="default-width">800</property>
+    <property name="default-height">600</property>
+    <property name="content">
       <object class="AdwNavigationView" id="nav">
         <child>
           <object class="AdwNavigationPage">

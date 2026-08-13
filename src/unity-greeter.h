@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <astal-4.h>
+#include <adwaita.h>
 #include <gio/gio.h>
 
 G_BEGIN_DECLS
@@ -35,11 +35,11 @@ G_BEGIN_DECLS
 /**
  * UnityGreeter:
  *
- * The greeter shell surface. A layer-shell overlay covering the whole
- * display and grabbing exclusive keyboard input.
+ * The greeter shell surface. A fullscreen window covering the whole
+ * display.
  */
 G_DECLARE_FINAL_TYPE (UnityGreeter, unity_greeter,
-                      UNITY, GREETER, AstalWindow)
+                      UNITY, GREETER, AdwApplicationWindow)
 
 /**
  * unity_greeter_new:

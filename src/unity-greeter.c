@@ -28,7 +28,7 @@
 
 struct _UnityGreeter
 {
-  AstalWindow parent_instance;
+  AdwApplicationWindow parent_instance;
 
   AdwNavigationView *nav;
   AdwWrapBox        *cards;
@@ -37,7 +37,7 @@ struct _UnityGreeter
   GListModel *sessions;
 };
 
-G_DEFINE_FINAL_TYPE (UnityGreeter, unity_greeter, ASTAL_TYPE_WINDOW)
+G_DEFINE_FINAL_TYPE (UnityGreeter, unity_greeter, ADW_TYPE_APPLICATION_WINDOW)
 
 static void
 on_card_activated (UnityGreeterUserCard *card, gpointer user_data)
