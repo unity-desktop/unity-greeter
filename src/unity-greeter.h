@@ -1,8 +1,27 @@
+/* unity-greeter.h
+ *
+ * Copyright 2026 Muqtadir
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 #pragma once
 
-#include <adwaita.h>
+#include <astal-4.h>
 #include <gio/gio.h>
-#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -16,10 +35,11 @@ G_BEGIN_DECLS
 /**
  * UnityGreeter:
  *
- * Main greeter window that presents users and available sessions.
+ * The greeter shell surface. A layer-shell overlay covering the whole
+ * display and grabbing exclusive keyboard input.
  */
 G_DECLARE_FINAL_TYPE (UnityGreeter, unity_greeter,
-                      UNITY, GREETER, AdwApplicationWindow)
+                      UNITY, GREETER, AstalWindow)
 
 /**
  * unity_greeter_new:
@@ -27,7 +47,7 @@ G_DECLARE_FINAL_TYPE (UnityGreeter, unity_greeter,
  * @users: list model containing #UnityGreeterUser objects.
  * @sessions: list model containing #UnityGreeterSession objects.
  *
- * Creates the greeter window.
+ * Creates the greeter shell surface.
  *
  * Returns: (transfer full): a new #UnityGreeter instance.
  */

@@ -7,6 +7,7 @@ unity_greeter_deps = [
   dep_graphene,
   dep_json,
   dep_act,
+  dep_astal4,
   dep_astalgreet,
   dep_astallogind,
   dep_wayland,
@@ -20,7 +21,6 @@ unity_greeter_defs = configure_file(
 
 unity_greeter_sources = files(
   'main.c',
-  'unity-greeter-app.c',
   'unity-greeter.c',
   'unity-greeter-idle.c',
 )
