@@ -1,7 +1,11 @@
 polkit.addRule(function (action, subject) {
-    if (subject.user === "greetd" &&
-        (action.id === "org.freedesktop.accounts.set-login-option" ||
-         action.id === "org.freedesktop.accounts.user-administration")) {
+    if (subject.user !== "greetd")
+        return;
+
+    if (action.id === "org.freedesktop.accounts.set-login-option" ||
+        action.id === "org.freedesktop.accounts.user-administration" ||
+        action.id === "org.freedesktop.login1.suspend" ||
+        action.id === "org.freedesktop.login1.suspend-multiple-sessions") {
         return polkit.Result.YES;
     }
 });
