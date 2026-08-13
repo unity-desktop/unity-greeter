@@ -110,11 +110,6 @@ on_suspend_idled (void *data, struct ext_idle_notification_v1 *n)
       g_warning ("idle: logind unavailable, skipping suspend");
       return;
     }
-  if (!astal_logind_logind_get_can_suspend (logind))
-    {
-      g_message ("idle: logind reports can_suspend=false");
-      return;
-    }
   astal_logind_logind_suspend (logind);
 }
 
@@ -169,6 +164,8 @@ unity_greeter_idle_watch (GtkWindow *window)
   GdkDisplay *display = gtk_widget_get_display (GTK_WIDGET (window));
   if (!GDK_IS_WAYLAND_DISPLAY (display))
     return;
+
+  astal_logind_get_default ();
 
   struct wl_display *wl = gdk_wayland_display_get_wl_display (display);
 
