@@ -20,19 +20,11 @@
 
 #include "unity-greeter-conversation.h"
 
+#include <string.h>
+
 #include <astal-greet.h>
 
 G_DEFINE_QUARK (unity-greeter-error-quark, unity_greeter_error)
-
-static GError *
-make_error (gboolean is_auth_error, const gchar *description)
-{
-  UnityGreeterErrorCode code = is_auth_error
-                                 ? UNITY_GREETER_ERROR_AUTH
-                                 : UNITY_GREETER_ERROR_OTHER;
-  return g_error_new_literal (UNITY_GREETER_ERROR, code,
-                              description != NULL ? description : "");
-}
 
 struct _UnityGreeterConversation
 {
@@ -54,6 +46,16 @@ static guint signals[N_SIGNALS];
 
 G_DEFINE_FINAL_TYPE (UnityGreeterConversation, unity_greeter_conversation, G_TYPE_OBJECT)
 
+static GError *
+make_error (gboolean is_auth_error, const gchar *description)
+{
+  UnityGreeterErrorCode code = is_auth_error
+                                 ? UNITY_GREETER_ERROR_AUTH
+                                 : UNITY_GREETER_ERROR_OTHER;
+  return g_error_new_literal (UNITY_GREETER_ERROR, code,
+                              description != NULL ? description : "");
+}
+
 static void
 drop_greeter (UnityGreeterConversation *self)
 {
@@ -63,39 +65,63 @@ drop_greeter (UnityGreeterConversation *self)
   g_clear_object (&self->greeter);
 }
 
+static gchar *
+normalise_prompt_label (const gchar *label)
+{
+  gchar *copy = g_strdup (label != NULL ? label : "");
+  g_strstrip (copy);
+  gsize n = strlen (copy);
+  while (n > 0 && copy[n - 1] == ':')
+    copy[--n] = '\0';
+  g_strstrip (copy);
+  return copy;
+}
+
+static void
+on_prompt_request (AstalGreetGreeter        *greeter,
+                   const gchar              *label,
+                   gboolean                  secret,
+                   UnityGreeterConversation *self)
+{
+  (void) greeter;
+  g_autofree gchar *clean = normalise_prompt_label (label);
+  g_signal_emit (self, signals[SIGNAL_PROMPT], 0, clean, secret);
+}
+
 static void
 on_visible_request (AstalGreetGreeter *g, const gchar *label, gpointer d)
 {
-  (void) g;
-  g_signal_emit (d, signals[SIGNAL_PROMPT], 0, label != NULL ? label : "", FALSE);
+  on_prompt_request (g, label, FALSE, d);
 }
 
 static void
 on_secret_request (AstalGreetGreeter *g, const gchar *label, gpointer d)
 {
-  (void) g;
-  g_signal_emit (d, signals[SIGNAL_PROMPT], 0, label != NULL ? label : "", TRUE);
+  on_prompt_request (g, label, TRUE, d);
 }
 
 static void
 on_info_message (AstalGreetGreeter *g, const gchar *text, gpointer d)
 {
   (void) g;
-  g_signal_emit (d, signals[SIGNAL_MESSAGE], 0, text != NULL ? text : "", FALSE);
+  UnityGreeterConversation *self = d;
+  g_signal_emit (self, signals[SIGNAL_MESSAGE], 0, text != NULL ? text : "", FALSE);
 }
 
 static void
 on_error_message (AstalGreetGreeter *g, const gchar *text, gpointer d)
 {
   (void) g;
-  g_signal_emit (d, signals[SIGNAL_MESSAGE], 0, text != NULL ? text : "", TRUE);
+  UnityGreeterConversation *self = d;
+  g_signal_emit (self, signals[SIGNAL_MESSAGE], 0, text != NULL ? text : "", TRUE);
 }
 
 static void
 on_authenticated (AstalGreetGreeter *g, gpointer d)
 {
   (void) g;
-  g_signal_emit (d, signals[SIGNAL_AUTHENTICATED], 0);
+  UnityGreeterConversation *self = d;
+  g_signal_emit (self, signals[SIGNAL_AUTHENTICATED], 0);
 }
 
 static void
@@ -137,7 +163,6 @@ unity_greeter_conversation_begin (UnityGreeterConversation *self,
                            G_CALLBACK (on_cancelled), self, G_CONNECT_DEFAULT);
 
   g_set_str (&self->username, username);
-
   astal_greet_greeter_create_session (self->greeter, self->username);
 }
 
@@ -153,9 +178,9 @@ unity_greeter_conversation_answer (UnityGreeterConversation *self,
 }
 
 void
-unity_greeter_conversation_start (UnityGreeterConversation *self,
-                                  const gchar * const      *cmd,
-                                  const gchar * const      *env)
+unity_greeter_conversation_start (UnityGreeterConversation  *self,
+                                  gchar                    **cmd,
+                                  gchar                    **env)
 {
   g_return_if_fail (UNITY_GREETER_IS_CONVERSATION (self));
   g_return_if_fail (cmd != NULL);
@@ -164,19 +189,11 @@ unity_greeter_conversation_start (UnityGreeterConversation *self,
     return;
 
   static gchar *empty[] = { NULL };
-  const gchar * const *env_effective =
-    env != NULL ? env : (const gchar * const *) empty;
-
-  gint cmd_len = 0;
-  for (const gchar * const *p = cmd; *p != NULL; p++)
-    cmd_len++;
-  gint env_len = 0;
-  for (const gchar * const *p = env_effective; *p != NULL; p++)
-    env_len++;
+  gchar **env_effective = env != NULL ? env : empty;
 
   astal_greet_greeter_start_session (self->greeter,
-                                     (gchar **) cmd, cmd_len,
-                                     (gchar **) env_effective, env_len,
+                                     cmd, g_strv_length (cmd),
+                                     env_effective, g_strv_length (env_effective),
                                      NULL, NULL);
 }
 
