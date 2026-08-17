@@ -1,5 +1,11 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
-src/unity-greeter-app.c
-src/unity-greeter.c
+src/auth/unity-greeter-conversation.c
+src/auth/unity-greeter-strength.c
+src/components/unity-greeter-session-dialog.ui
+src/components/unity-greeter-user-page.c
+src/components/unity-greeter-user-page.ui
+src/components/unity-greeter-user-setup-page.c
+src/components/unity-greeter-user-setup-page.ui
+src/main.c
 src/unity-greeter.ui
