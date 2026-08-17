@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: unity-greeter\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-17 19:21+0530\n"
+"POT-Creation-Date: 2026-08-17 19:32+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -181,6 +181,11 @@ msgstr ""
 
 #: src/components/unity-greeter-user-setup-page.c:118
 msgid "The passwords do not match."
+msgstr ""
+
+#: src/components/unity-greeter-user-setup-page.c:124
+#, c-format
+msgid "Password strength: %s"
 msgstr ""
 
 #: src/components/unity-greeter-user-setup-page.ui:7

@@ -122,62 +122,48 @@ unity_greeter_strength_new (void)
   return g_object_new (UNITY_GREETER_TYPE_STRENGTH, NULL);
 }
 
-void
+gchar *
 unity_greeter_strength_check (UnityGreeterStrength *self,
                               const gchar          *password,
                               const gchar          *username,
-                              const gchar         **out_hint,
-                              gint                 *out_level,
-                              const gchar         **out_level_hint)
+                              gboolean             *out_is_error,
+                              gint                 *out_level)
 {
-  g_return_if_fail (UNITY_GREETER_IS_STRENGTH (self));
+  g_return_val_if_fail (UNITY_GREETER_IS_STRENGTH (self), NULL);
 
   gint length = password != NULL ? (gint) strlen (password) : 0;
-  gint rv = -1;
+  if (length == 0)
+    {
+      if (out_is_error != NULL) *out_is_error = FALSE;
+      if (out_level != NULL)    *out_level    = 0;
+      return NULL;
+    }
+
   void *aux = NULL;
+  gint  rv  = self->settings != NULL
+                ? pwquality_check (self->settings, password, NULL, username, &aux)
+                : -1;
 
-  if (self->settings != NULL && length > 0)
-    rv = pwquality_check (self->settings, password, NULL, username, &aux);
-
-  gdouble strength = CLAMP (0.01 * rv, 0.0, 1.0);
-  gint         level;
-  const gchar *level_hint;
-
+  /* pwquality rejected the candidate: return the improvement hint on its
+     own so the reader gets an actionable phrase, not a "strength: X" one. */
   if (rv < 0)
     {
-      level_hint = C_("Password strength", "poor");
-      level = length > 0 ? 1 : 0;
-    }
-  else if (strength < 0.50)
-    {
-      level_hint = C_("Password strength", "weak");
-      level = 2;
-    }
-  else if (strength < 0.75)
-    {
-      level_hint = C_("Password strength", "strong");
-      level = 3;
-    }
-  else if (strength < 0.90)
-    {
-      level_hint = C_("Password strength", "strong");
-      level = 4;
-    }
-  else
-    {
-      level_hint = C_("Password strength", "excellent");
-      level = 5;
+      gint code = (length < pw_min_length (self->settings))
+                    ? PWQ_ERROR_MIN_LENGTH : rv;
+      if (out_is_error != NULL) *out_is_error = TRUE;
+      if (out_level != NULL)    *out_level    = 1;
+      return g_strdup (hint_for_pwq_error (code));
     }
 
-  if (out_hint != NULL)
-    {
-      if (length > 0 && length < pw_min_length (self->settings))
-        *out_hint = hint_for_pwq_error (PWQ_ERROR_MIN_LENGTH);
-      else
-        *out_hint = hint_for_pwq_error (rv);
-    }
-  if (out_level != NULL)
-    *out_level = level;
-  if (out_level_hint != NULL)
-    *out_level_hint = level_hint;
+  gdouble      strength = CLAMP (0.01 * rv, 0.0, 1.0);
+  gint         level;
+  const gchar *band;
+  if (strength < 0.50)      { level = 2; band = C_("Password strength", "weak"); }
+  else if (strength < 0.75) { level = 3; band = C_("Password strength", "strong"); }
+  else if (strength < 0.90) { level = 4; band = C_("Password strength", "strong"); }
+  else                      { level = 5; band = C_("Password strength", "excellent"); }
+
+  if (out_is_error != NULL) *out_is_error = FALSE;
+  if (out_level != NULL)    *out_level    = level;
+  return g_strdup_printf (_("Password strength: %s"), band);
 }

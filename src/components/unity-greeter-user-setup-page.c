@@ -101,11 +101,11 @@ validate (UnityGreeterUserSetupPage *self)
   const gchar *confirm  = gtk_editable_get_text (GTK_EDITABLE (self->confirm_entry));
   const gchar *username = unity_greeter_user_get_user_name (self->user);
 
-  const gchar *hint = NULL;
-  const gchar *level_hint = NULL;
-  gint         level = 0;
-  unity_greeter_strength_check (self->strength, password, username,
-                                &hint, &level, &level_hint);
+  gboolean is_error = FALSE;
+  gint     level    = 0;
+  g_autofree gchar *message =
+    unity_greeter_strength_check (self->strength, password, username,
+                                  &is_error, &level);
 
   gtk_level_bar_set_value (self->strength_bar, level);
 
@@ -114,14 +114,12 @@ validate (UnityGreeterUserSetupPage *self)
                            g_strcmp0 (password, confirm) == 0;
   gboolean confirm_typed = confirm != NULL && *confirm != '\0';
 
+  /* Mismatch beats strength: if the two fields disagree the visitor
+     needs to know that first, so it takes over the hint line. */
   if (confirm_typed && !match)
     show_hint (self, _("The passwords do not match."), TRUE);
-  else if (password != NULL && *password != '\0' && !strong_enough && hint != NULL)
-    show_hint (self, hint, TRUE);
-  else if (password != NULL && *password != '\0' && level_hint != NULL)
-    show_hint (self, level_hint, FALSE);
   else
-    show_hint (self, NULL, FALSE);
+    show_hint (self, message, is_error);
 
   gtk_widget_set_sensitive (GTK_WIDGET (self->submit_button),
                             strong_enough && match);

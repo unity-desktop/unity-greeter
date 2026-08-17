@@ -53,19 +53,21 @@ UnityGreeterStrength *unity_greeter_strength_new (void);
  * unity_greeter_strength_check:
  * @self: a #UnityGreeterStrength.
  * @password: candidate password.
- * @username: (nullable): the account name (used to reject passwords
- *   containing the user's name).
- * @out_hint: (out) (transfer none): localised improvement hint,
- *   e.g. "Try to use more numbers".
+ * @username: (nullable): the account name.
+ * @out_is_error: (out): %TRUE when the returned message is a rejection.
  * @out_level: (out): score band from 0 (empty) through 5 (excellent).
- * @out_level_hint: (out) (transfer none): localised label for the level,
- *   e.g. "weak", "strong".
+ *
+ * Returns a single localised line describing the candidate. On a
+ * pwquality rejection the line is the improvement hint. Otherwise it
+ * reads "Password strength: weak" (or strong, excellent, and so on).
+ * Returns %NULL when @password is empty.
+ *
+ * Returns: (nullable) (transfer full): a newly allocated message.
  */
-void unity_greeter_strength_check (UnityGreeterStrength *self,
-                                   const gchar          *password,
-                                   const gchar          *username,
-                                   const gchar         **out_hint,
-                                   gint                 *out_level,
-                                   const gchar         **out_level_hint);
+gchar *unity_greeter_strength_check (UnityGreeterStrength *self,
+                                     const gchar          *password,
+                                     const gchar          *username,
+                                     gboolean             *out_is_error,
+                                     gint                 *out_level);
 
 G_END_DECLS
