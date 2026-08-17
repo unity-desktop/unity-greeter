@@ -25,6 +25,7 @@
 #include "unity-greeter-idle.h"
 #include "unity-greeter-user-card.h"
 #include "unity-greeter-user-page.h"
+#include "unity-greeter-user-setup-page.h"
 
 struct _UnityGreeter
 {
@@ -46,10 +47,14 @@ on_card_activated (UnityGreeterUserCard *card, gpointer user_data)
   UnityGreeterUser *user = unity_greeter_user_card_get_user (card);
 
   AdwNavigationPage *visible = adw_navigation_view_get_visible_page (self->nav);
-  if (UNITY_GREETER_IS_USER_PAGE (visible))
+  if (UNITY_GREETER_IS_USER_PAGE (visible) ||
+      UNITY_GREETER_IS_USER_SETUP_PAGE (visible))
     return;
 
-  AdwNavigationPage *page = unity_greeter_user_page_new (user, self->sessions);
+  AdwNavigationPage *page =
+    unity_greeter_user_get_password_mode (user) == ACT_USER_PASSWORD_MODE_SET_AT_LOGIN
+      ? unity_greeter_user_setup_page_new (user, self->sessions)
+      : unity_greeter_user_page_new (user, self->sessions);
   adw_navigation_view_push (self->nav, page);
 }
 
@@ -102,6 +107,7 @@ unity_greeter_class_init (UnityGreeterClass *klass)
 
   g_type_ensure (UNITY_GREETER_TYPE_USER_CARD);
   g_type_ensure (UNITY_GREETER_TYPE_USER_PAGE);
+  g_type_ensure (UNITY_GREETER_TYPE_USER_SETUP_PAGE);
 
   gtk_widget_class_set_template_from_resource (
     widget_class, "/org/unity/Greeter/unity-greeter.ui");
