@@ -37,7 +37,7 @@ install_data(
 
 install_data(
   'greetd/10-unity-greeter.rules',
-  install_dir: sysconfdir / 'polkit-1' / 'rules.d',
+  install_dir: datadir / 'polkit-1' / 'rules.d',
 )
 
 install_data(
