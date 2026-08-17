@@ -71,6 +71,18 @@ void unity_greeter_user_persist_session (UnityGreeterUser *self,
                                          const gchar      *session_id);
 
 /**
+ * unity_greeter_user_set_password:
+ * @self: a #UnityGreeterUser.
+ * @password: the new plaintext password.
+ *
+ * Writes @password to shadow through AccountsService's SetPassword. This
+ * also clears the SET_AT_LOGIN marker, so the next PAM acct_mgmt returns
+ * without asking for a chauthtok round. Synchronous D-Bus call.
+ */
+void unity_greeter_user_set_password    (UnityGreeterUser *self,
+                                         const gchar      *password);
+
+/**
  * unity_greeter_user_get_user_name:
  * @self: a #UnityGreeterUser.
  *

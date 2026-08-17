@@ -115,6 +115,16 @@ unity_greeter_user_persist_session (UnityGreeterUser *self, const gchar *session
                           -1, NULL, on_set_session_done, NULL);
 }
 
+void
+unity_greeter_user_set_password (UnityGreeterUser *self,
+                                 const gchar      *password)
+{
+  g_return_if_fail (UNITY_GREETER_IS_USER (self));
+  g_return_if_fail (password != NULL);
+
+  act_user_set_password (self->act_user, password, "");
+}
+
 static gint
 compare_by_login_frequency (gconstpointer a, gconstpointer b, gpointer user_data)
 {
