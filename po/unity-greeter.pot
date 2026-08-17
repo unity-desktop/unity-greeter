@@ -1,0 +1,214 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the unity-greeter package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: unity-greeter\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-17 19:32+0530\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/auth/unity-greeter-strength.c:47
+msgctxt "Password hint"
+msgid "The new password needs to be different from the old one"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:49
+msgctxt "Password hint"
+msgid "Try changing some letters and numbers"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:52
+msgctxt "Password hint"
+msgid "Try changing the password a bit more"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:54
+msgctxt "Password hint"
+msgid "A password without your user name would be stronger"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:56
+msgctxt "Password hint"
+msgid "Try to avoid using your name in the password"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:58
+msgctxt "Password hint"
+msgid "Try to avoid some of the words included in the password"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:60
+msgctxt "Password hint"
+msgid "Avoid common words"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:62
+msgctxt "Password hint"
+msgid "Try to avoid reordering existing words"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:64
+msgctxt "Password hint"
+msgid "Try to use more numbers"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:66
+msgctxt "Password hint"
+msgid "Try to use more uppercase letters"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:68
+msgctxt "Password hint"
+msgid "Try to use more lowercase letters"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:70
+msgctxt "Password hint"
+msgid "Try to use more special characters, like punctuation"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:72
+msgctxt "Password hint"
+msgid "Try to use a mixture of letters, numbers and punctuation"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:74
+msgctxt "Password hint"
+msgid "Try to avoid repeating the same character"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:76
+msgctxt "Password hint"
+msgid "Try to avoid repeating the same type of character"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:78
+msgctxt "Password hint"
+msgid "Try to avoid sequences like 1234 or abcd"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:80
+msgctxt "Password hint"
+msgid "Password needs to be longer"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:82
+msgctxt "Password hint"
+msgid "Mix uppercase and lowercase and try to use a number or two"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:84
+msgctxt "Password hint"
+msgid "Try adding more letters, numbers and punctuation"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:148
+msgctxt "Password strength"
+msgid "poor"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:153
+msgctxt "Password strength"
+msgid "weak"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:158 src/auth/unity-greeter-strength.c:163
+msgctxt "Password strength"
+msgid "strong"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:168
+msgctxt "Password strength"
+msgid "excellent"
+msgstr ""
+
+#: src/components/unity-greeter-session-dialog.ui:6
+#: src/components/unity-greeter-session-dialog.ui:19
+#: src/components/unity-greeter-user-page.ui:111
+msgid "Session"
+msgstr ""
+
+#: src/components/unity-greeter-session-dialog.ui:20
+msgid "Choose the session to login with"
+msgstr ""
+
+#: src/components/unity-greeter-user-page.c:213
+msgid "No sessions installed"
+msgstr ""
+
+#: src/components/unity-greeter-user-page.c:223
+msgid "Session command is malformed"
+msgstr ""
+
+#: src/components/unity-greeter-user-page.c:239
+msgid "Incorrect password"
+msgstr ""
+
+#: src/components/unity-greeter-user-page.c:240
+msgid "Login failed"
+msgstr ""
+
+#: src/components/unity-greeter-user-page.ui:7
+msgid "User Login Page"
+msgstr ""
+
+#: src/components/unity-greeter-user-page.ui:35
+#: src/components/unity-greeter-user-setup-page.ui:23
+msgid "Back"
+msgstr ""
+
+#: src/components/unity-greeter-user-page.ui:106
+msgid "Password"
+msgstr ""
+
+#: src/components/unity-greeter-user-page.ui:127
+msgid "Caps Lock is on"
+msgstr ""
+
+#: src/components/unity-greeter-user-page.ui:138
+msgid "Login"
+msgstr ""
+
+#: src/components/unity-greeter-user-setup-page.c:118
+msgid "The passwords do not match."
+msgstr ""
+
+#: src/components/unity-greeter-user-setup-page.c:124
+#, c-format
+msgid "Password strength: %s"
+msgstr ""
+
+#: src/components/unity-greeter-user-setup-page.ui:7
+#: src/components/unity-greeter-user-setup-page.ui:116
+msgid "Set Password"
+msgstr ""
+
+#: src/components/unity-greeter-user-setup-page.ui:54
+msgid "Choose a new password to continue."
+msgstr ""
+
+#: src/components/unity-greeter-user-setup-page.ui:76
+msgid "New password"
+msgstr ""
+
+#: src/components/unity-greeter-user-setup-page.ui:83
+msgid "Confirm password"
+msgstr ""
+
+#: src/main.c:119 src/unity-greeter.ui:6
+msgid "Unity Greeter"
+msgstr ""
+
+#: src/unity-greeter.ui:14 src/unity-greeter.ui:34
+msgid "Users"
+msgstr ""

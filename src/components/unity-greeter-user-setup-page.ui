@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="UnityGreeterUserSetupPage" parent="AdwNavigationPage">
+    <property name="tag">setup</property>
+    <property name="title" translatable="yes">Set Password</property>
+    <signal name="shown" handler="on_page_shown" swapped="no"/>
+    <property name="child">
+      <object class="GtkOverlay">
+        <property name="child">
+          <object class="GtkPicture" id="wallpaper">
+            <property name="content-fit">cover</property>
+          </object>
+        </property>
+        <child type="overlay">
+          <object class="GtkButton" id="back">
+            <property name="halign">start</property>
+            <property name="valign">start</property>
+            <property name="margin-top">12</property>
+            <property name="margin-start">12</property>
+            <property name="icon-name">go-previous-symbolic</property>
+            <property name="tooltip-text" translatable="yes">Back</property>
+            <property name="action-name">navigation.pop</property>
+          </object>
+        </child>
+        <child type="overlay">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="halign">fill</property>
+            <property name="valign">center</property>
+            <property name="spacing">24</property>
+            <property name="margin-start">12</property>
+            <property name="margin-end">12</property>
+            <child>
+              <object class="AdwAvatar" id="avatar">
+                <property name="size">192</property>
+                <property name="show-initials">true</property>
+                <property name="halign">center</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="name_label">
+                <property name="halign">center</property>
+                <property name="ellipsize">end</property>
+                <style>
+                  <class name="title-2"/>
+                  <class name="body"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Choose a new password to continue.</property>
+                <property name="halign">center</property>
+                <property name="wrap">true</property>
+                <property name="justify">center</property>
+                <property name="max-width-chars">36</property>
+                <style>
+                  <class name="dim-label"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="AdwClamp">
+                <property name="maximum-size">400</property>
+                <property name="tightening-threshold">360</property>
+                <property name="child">
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">24</property>
+                    <child>
+                      <object class="AdwPreferencesGroup">
+                        <child>
+                          <object class="AdwPasswordEntryRow" id="entry">
+                            <property name="title" translatable="yes">New password</property>
+                            <signal name="changed"         handler="on_entry_changed" swapped="no"/>
+                            <signal name="entry-activated" handler="on_submit"        swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwPasswordEntryRow" id="confirm_entry">
+                            <property name="title" translatable="yes">Confirm password</property>
+                            <signal name="changed"         handler="on_entry_changed" swapped="no"/>
+                            <signal name="entry-activated" handler="on_submit"        swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">12</property>
+                        <child>
+                          <object class="GtkLevelBar" id="strength_bar">
+                            <property name="mode">discrete</property>
+                            <property name="min-value">0</property>
+                            <property name="max-value">5</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="hint_label">
+                            <property name="wrap">true</property>
+                            <property name="justify">center</property>
+                            <property name="max-width-chars">36</property>
+                            <property name="halign">center</property>
+                            <property name="visible">false</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwPreferencesGroup">
+                        <child>
+                          <object class="AdwButtonRow" id="submit_button">
+                            <property name="title" translatable="yes">Set Password</property>
+                            <property name="sensitive">false</property>
+                            <signal name="activated" handler="on_submit" swapped="no"/>
+                            <style>
+                              <class name="suggested-action"/>
+                              <class name="body"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+  </template>
+</interface>

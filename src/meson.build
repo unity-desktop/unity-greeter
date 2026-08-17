@@ -11,6 +11,7 @@ unity_greeter_deps = [
   dep_astallogind,
   dep_astalwl,
   dep_astalwlr,
+  dep_pwquality,
 ]
 
 unity_greeter_defs = configure_file(

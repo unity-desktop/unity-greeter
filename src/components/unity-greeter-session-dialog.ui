@@ -15,9 +15,6 @@
         </child>
         <property name="content">
           <object class="AdwStatusPage">
-            <style>
-              <class name="compact"/>
-            </style>
             <property name="icon-name">computer-symbolic</property>
             <property name="title" translatable="yes">Session</property>
             <property name="description" translatable="yes">Choose the session to login with</property>
@@ -25,10 +22,13 @@
               <object class="AdwClamp">
                 <property name="maximum-size">400</property>
                 <property name="child">
-                  <object class="AdwPreferencesGroup" id="sessions_group" />
+                  <object class="AdwPreferencesGroup" id="sessions_group"/>
                 </property>
               </object>
             </property>
+            <style>
+              <class name="compact"/>
+            </style>
           </object>
         </property>
       </object>

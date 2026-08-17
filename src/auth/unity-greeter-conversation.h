@@ -47,23 +47,23 @@ typedef enum
 /**
  * unity_greeter_error_quark:
  *
- * Gets the #GQuark for #UNITY_GREETER_ERROR.
- *
- * Returns: the error domain quark.
+ * Returns the #GQuark identifying #UNITY_GREETER_ERROR.
  */
 GQuark unity_greeter_error_quark (void);
 
 /**
  * UNITY_GREETER_TYPE_CONVERSATION:
  *
- * The #GType for #UnityGreeterConversation.
+ * Type identifier for #UnityGreeterConversation.
  */
 #define UNITY_GREETER_TYPE_CONVERSATION (unity_greeter_conversation_get_type ())
 
 /**
  * UnityGreeterConversation:
  *
- * Manages an authentication conversation with the greeter backend.
+ * Drives one login attempt against greetd. Relays PAM prompts, info
+ * messages and error messages to the UI unchanged, and emits terminal
+ * signals when the flow ends.
  */
 G_DECLARE_FINAL_TYPE (UnityGreeterConversation, unity_greeter_conversation,
                       UNITY_GREETER, CONVERSATION, GObject)
@@ -71,7 +71,7 @@ G_DECLARE_FINAL_TYPE (UnityGreeterConversation, unity_greeter_conversation,
 /**
  * unity_greeter_conversation_new:
  *
- * Creates a new authentication conversation object.
+ * Creates an idle conversation.
  *
  * Returns: (transfer full): a new #UnityGreeterConversation.
  */
@@ -80,9 +80,9 @@ UnityGreeterConversation *unity_greeter_conversation_new (void);
 /**
  * unity_greeter_conversation_begin:
  * @self: a #UnityGreeterConversation.
- * @username: user name to authenticate.
+ * @username: user to authenticate.
  *
- * Starts a new authentication conversation for @username.
+ * Opens a fresh session with greetd for @username.
  */
 void unity_greeter_conversation_begin (UnityGreeterConversation *self,
                                        const gchar              *username);
@@ -91,8 +91,6 @@ void unity_greeter_conversation_begin (UnityGreeterConversation *self,
  * unity_greeter_conversation_answer:
  * @self: a #UnityGreeterConversation.
  * @response: response text for the active prompt.
- *
- * Sends a response to the active authentication prompt.
  */
 void unity_greeter_conversation_answer (UnityGreeterConversation *self,
                                         const gchar              *response);
@@ -100,20 +98,20 @@ void unity_greeter_conversation_answer (UnityGreeterConversation *self,
 /**
  * unity_greeter_conversation_start:
  * @self: a #UnityGreeterConversation.
- * @cmd: %NULL-terminated command argument vector.
- * @env: (nullable): %NULL-terminated environment vector.
+ * @cmd: (array zero-terminated=1): session command line.
+ * @env: (array zero-terminated=1) (nullable): extra environment.
  *
- * Starts the user session for a completed authentication flow.
+ * Tells greetd to run @cmd once PAM has already reported success.
  */
-void unity_greeter_conversation_start  (UnityGreeterConversation *self,
-                                        const gchar * const      *cmd,
-                                        const gchar * const      *env);
+void unity_greeter_conversation_start  (UnityGreeterConversation  *self,
+                                        gchar                    **cmd,
+                                        gchar                    **env);
 
 /**
  * unity_greeter_conversation_cancel:
  * @self: a #UnityGreeterConversation.
  *
- * Cancels the current authentication conversation.
+ * Drops the running session.
  */
 void unity_greeter_conversation_cancel (UnityGreeterConversation *self);
 
