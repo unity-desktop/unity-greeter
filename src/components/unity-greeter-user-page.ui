@@ -5,6 +5,8 @@
   <template class="UnityGreeterUserPage" parent="AdwNavigationPage">
     <property name="tag">login</property>
     <property name="title" translatable="yes">User Login Page</property>
+    <signal name="shown"  handler="on_page_shown"  swapped="no"/>
+    <signal name="hidden" handler="on_page_hidden" swapped="no"/>
     <property name="child">
       <object class="AdwBreakpointBin">
         <property name="width-request">300</property>
@@ -102,11 +104,13 @@
                                     <child>
                                       <object class="AdwPasswordEntryRow" id="entry">
                                         <property name="title" translatable="yes">Password</property>
+                                        <signal name="entry-activated" handler="on_submit" swapped="no"/>
                                         <child>
                                           <object class="GtkButton" id="session_button">
                                             <property name="icon-name">emblem-system-symbolic</property>
                                             <property name="tooltip-text" translatable="yes">Session</property>
                                             <property name="valign">center</property>
+                                            <signal name="clicked" handler="on_pick_session" swapped="no"/>
                                             <style>
                                               <class name="flat"/>
                                             </style>
@@ -130,8 +134,9 @@
                                 <child>
                                   <object class="AdwPreferencesGroup">
                                     <child>
-                                      <object class="AdwButtonRow" id="login_button">
+                                      <object class="AdwButtonRow" id="submit_button">
                                         <property name="title" translatable="yes">Login</property>
+                                        <signal name="activated" handler="on_submit" swapped="no"/>
                                         <style>
                                           <class name="suggested-action"/>
                                           <class name="body"/>

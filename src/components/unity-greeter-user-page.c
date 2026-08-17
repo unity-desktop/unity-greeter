@@ -20,8 +20,6 @@
 
 #include "unity-greeter-user-page.h"
 
-#include <string.h>
-
 #include <glib/gi18n.h>
 
 #include "unity-greeter-conversation.h"
@@ -39,7 +37,7 @@ struct _UnityGreeterUserPage
   GtkLabel            *message;
   AdwPasswordEntryRow *entry;
   GtkLabel            *caps_warning;
-  AdwButtonRow        *login_button;
+  AdwButtonRow        *submit_button;
   AdwViewStack        *stack;
   GtkButton           *session_button;
   GtkButton           *back;
@@ -74,26 +72,11 @@ static void
 set_busy (UnityGreeterUserPage *self, gboolean busy)
 {
   adw_view_stack_set_visible_child_name (self->stack, busy ? "busy" : "form");
-  gtk_widget_set_visible   (GTK_WIDGET (self->back),         !busy);
-  gtk_widget_set_sensitive (GTK_WIDGET (self->entry),        !busy);
-  gtk_widget_set_sensitive (GTK_WIDGET (self->login_button), !busy);
+  gtk_widget_set_visible   (GTK_WIDGET (self->back),          !busy);
+  gtk_widget_set_sensitive (GTK_WIDGET (self->entry),         !busy);
+  gtk_widget_set_sensitive (GTK_WIDGET (self->submit_button), !busy);
   if (!busy)
     gtk_widget_grab_focus (GTK_WIDGET (self->entry));
-}
-
-static const gchar *
-button_label_for_prompt (const gchar *prompt)
-{
-  g_autofree gchar *lower =
-    prompt != NULL ? g_ascii_strdown (prompt, -1) : g_strdup ("");
-
-  if (strstr (lower, "retype") != NULL ||
-      strstr (lower, "confirm") != NULL ||
-      strstr (lower, "again") != NULL)
-    return _("Confirm");
-  if (strstr (lower, "new") != NULL || strstr (lower, "change") != NULL)
-    return _("Set Password");
-  return _("Login");
 }
 
 static UnityGreeterSession *
@@ -149,8 +132,12 @@ submit (UnityGreeterUserPage *self)
     unity_greeter_user_get_user_name (self->user));
 }
 
-static void on_login (AdwButtonRow *r, gpointer u) { (void) r; submit (u); }
-static void on_enter (AdwEntryRow  *r, gpointer u) { (void) r; submit (u); }
+static void
+on_submit (GtkWidget *source, UnityGreeterUserPage *self)
+{
+  (void) source;
+  submit (self);
+}
 
 static void
 on_session_picked (UnityGreeterSessionDialog *dialog,
@@ -163,14 +150,13 @@ on_session_picked (UnityGreeterSessionDialog *dialog,
 }
 
 static void
-on_pick_session (GtkButton *b, gpointer user_data)
+on_pick_session (GtkButton *button, UnityGreeterUserPage *self)
 {
-  (void) b;
-  UnityGreeterUserPage *self = user_data;
+  (void) button;
   AdwDialog *dialog =
     unity_greeter_session_dialog_new (self->sessions, self->selected_session);
-  g_signal_connect (dialog, "session-selected",
-                    G_CALLBACK (on_session_picked), self);
+  g_signal_connect_object (dialog, "session-selected",
+                           G_CALLBACK (on_session_picked), self, G_CONNECT_DEFAULT);
   adw_dialog_present (dialog, GTK_WIDGET (self));
 }
 
@@ -181,29 +167,21 @@ on_prompt (UnityGreeterConversation *conv,
            gpointer                  user_data)
 {
   (void) conv;
-  (void) secret;   /* our one entry is always masked */
+  (void) label;
+  (void) secret;
   UnityGreeterUserPage *self = user_data;
 
   if (self->pending != NULL)
     {
-      g_autofree gchar *r = g_steal_pointer (&self->pending);
-      unity_greeter_conversation_answer (self->conversation, r);
+      g_autofree gchar *staged = g_steal_pointer (&self->pending);
+      unity_greeter_conversation_answer (self->conversation, staged);
       return;
     }
 
-  g_autofree gchar *title = g_strdup (label != NULL ? label : "");
-  g_strstrip (title);
-  gsize n = strlen (title);
-  while (n > 0 && title[n - 1] == ':')
-    title[--n] = '\0';
-  g_strstrip (title);
-
-  const gchar *shown = *title != '\0' ? title : _("Password");
-  adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->entry), shown);
-  adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->login_button),
-                                 button_label_for_prompt (shown));
+  /* No staged password: fall back to letting the visitor type. The entry
+     title stays at the .ui default ("Password") since this page only ever
+     handles the login prompt. */
   gtk_editable_set_text (GTK_EDITABLE (self->entry), "");
-
   set_busy (self, FALSE);
 }
 
@@ -248,8 +226,7 @@ on_authenticated (UnityGreeterConversation *conv, gpointer user_data)
     }
   g_auto (GStrv) env = unity_greeter_session_build_environment (session);
 
-  unity_greeter_conversation_start (self->conversation,
-    (const gchar * const *) argv, (const gchar * const *) env);
+  unity_greeter_conversation_start (self->conversation, argv, env);
 }
 
 static void
@@ -262,25 +239,22 @@ on_failed (UnityGreeterConversation *conv, GError *error, gpointer user_data)
     error->code == UNITY_GREETER_ERROR_AUTH ? _("Incorrect password")
                                             : _("Login failed"),
     TRUE);
-  adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->login_button),
-                                 _("Login"));
   set_busy (self, FALSE);
-
   self->started = FALSE;
   g_clear_pointer (&self->pending, g_free);
 }
 
 static void
-on_hidden (AdwNavigationPage *page, gpointer u)
+on_page_hidden (AdwNavigationPage *page, gpointer user_data)
 {
-  (void) u;
+  (void) user_data;
   unity_greeter_conversation_cancel (UNITY_GREETER_USER_PAGE (page)->conversation);
 }
 
 static void
-on_shown (AdwNavigationPage *page, gpointer u)
+on_page_shown (AdwNavigationPage *page, gpointer user_data)
 {
-  (void) u;
+  (void) user_data;
   UnityGreeterUserPage *self = UNITY_GREETER_USER_PAGE (page);
   if (g_strcmp0 (adw_view_stack_get_visible_child_name (self->stack), "form") == 0)
     gtk_widget_grab_focus (GTK_WIDGET (self->entry));
@@ -317,22 +291,6 @@ apply_wallpaper (UnityGreeterUserPage *self)
 }
 
 static void
-apply_password_hint (UnityGreeterUserPage *self)
-{
-  switch (unity_greeter_user_get_password_mode (self->user))
-    {
-    case ACT_USER_PASSWORD_MODE_SET_AT_LOGIN:
-      show_message (self, _("New password required. Press Enter to continue."), FALSE);
-      break;
-    case ACT_USER_PASSWORD_MODE_NONE:
-      show_message (self, _("This account has no password. Press Enter to sign in."), FALSE);
-      break;
-    default:
-      break;
-    }
-}
-
-static void
 apply_session_defaults (UnityGreeterUserPage *self)
 {
   gtk_widget_set_visible (GTK_WIDGET (self->session_button),
@@ -351,6 +309,24 @@ apply_session_defaults (UnityGreeterUserPage *self)
         UNITY_GREETER_SESSION (g_list_model_get_item (self->sessions, 0));
       self->selected_session = g_strdup (unity_greeter_session_get_id (first));
     }
+}
+
+static void
+maybe_auto_begin (UnityGreeterUserPage *self)
+{
+  /* Auto-begin for accounts marked passwordless in AccountsService. PAM
+     accepts them under nullok and no prompt appears; if it does prompt,
+     the visitor types into the entry as usual. */
+  if (unity_greeter_user_get_password_mode (self->user) !=
+      ACT_USER_PASSWORD_MODE_NONE)
+    return;
+  if (self->started)
+    return;
+
+  set_busy (self, TRUE);
+  self->started = TRUE;
+  unity_greeter_conversation_begin (self->conversation,
+    unity_greeter_user_get_user_name (self->user));
 }
 
 static void
@@ -384,16 +360,22 @@ unity_greeter_user_page_class_init (UnityGreeterUserPageClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class,
     "/org/unity/Greeter/unity-greeter-user-page.ui");
+
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, wallpaper);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, avatar);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, name_label);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, message);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, entry);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, caps_warning);
-  gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, login_button);
+  gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, submit_button);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, stack);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, session_button);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, back);
+
+  gtk_widget_class_bind_template_callback (widget_class, on_page_shown);
+  gtk_widget_class_bind_template_callback (widget_class, on_page_hidden);
+  gtk_widget_class_bind_template_callback (widget_class, on_submit);
+  gtk_widget_class_bind_template_callback (widget_class, on_pick_session);
 }
 
 static void
@@ -414,15 +396,8 @@ unity_greeter_user_page_new (UnityGreeterUser *user, GListModel *sessions)
 
   apply_identity (self);
   apply_wallpaper (self);
-  apply_password_hint (self);
   apply_session_defaults (self);
   sync_caps_warning (self);
-
-  g_signal_connect (self->entry,          "entry-activated", G_CALLBACK (on_enter),        self);
-  g_signal_connect (self->login_button,   "activated",       G_CALLBACK (on_login),        self);
-  g_signal_connect (self->session_button, "clicked",         G_CALLBACK (on_pick_session), self);
-  g_signal_connect (self,                 "hidden",          G_CALLBACK (on_hidden),       NULL);
-  g_signal_connect (self,                 "shown",           G_CALLBACK (on_shown),        NULL);
 
   GdkDisplay *display = gdk_display_get_default ();
   GdkSeat    *seat    = display != NULL ? gdk_display_get_default_seat (display) : NULL;
@@ -432,12 +407,17 @@ unity_greeter_user_page_new (UnityGreeterUser *user, GListModel *sessions)
                              G_CALLBACK (on_caps_lock_changed), self, G_CONNECT_DEFAULT);
 
   self->conversation = unity_greeter_conversation_new ();
-  g_signal_connect (self->conversation, "prompt",        G_CALLBACK (on_prompt),        self);
-  g_signal_connect (self->conversation, "message",       G_CALLBACK (on_message),       self);
-  g_signal_connect (self->conversation, "authenticated", G_CALLBACK (on_authenticated), self);
-  g_signal_connect (self->conversation, "failed",        G_CALLBACK (on_failed),        self);
+  g_signal_connect_object (self->conversation, "prompt",
+                           G_CALLBACK (on_prompt),        self, G_CONNECT_DEFAULT);
+  g_signal_connect_object (self->conversation, "message",
+                           G_CALLBACK (on_message),       self, G_CONNECT_DEFAULT);
+  g_signal_connect_object (self->conversation, "authenticated",
+                           G_CALLBACK (on_authenticated), self, G_CONNECT_DEFAULT);
+  g_signal_connect_object (self->conversation, "failed",
+                           G_CALLBACK (on_failed),        self, G_CONNECT_DEFAULT);
 
   set_busy (self, FALSE);
+  maybe_auto_begin (self);
 
   return ADW_NAVIGATION_PAGE (self);
 }
