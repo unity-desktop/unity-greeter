@@ -22,6 +22,7 @@ dep_astalgreet  = dependency('astal-greet-0.1')
 dep_astallogind = dependency('astal-logind-0.1')
 dep_astalwl     = dependency('astal-wl-0.1')
 dep_astalwlr    = dependency('astal-wlr-0.1')
+dep_pwquality   = dependency('pwquality')
 
 gnome = import('gnome')
 i18n  = import('i18n')
