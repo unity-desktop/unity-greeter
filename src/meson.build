@@ -14,7 +14,7 @@ unity_greeter_deps = [
   dep_pwquality,
 ]
 
-unity_greeter_defs = configure_file(
+configure_file(
   input:         'unity-greeter-defs.h.in',
   output:        'unity-greeter-defs.h',
   configuration: mirror_conf,
@@ -43,7 +43,6 @@ executable(
   dependencies:        unity_greeter_deps,
   include_directories: include_directories('.', 'auth', 'session', 'components'),
   install:             true,
-  install_dir:         bindir,
 )
 
 executable(
@@ -51,5 +50,4 @@ executable(
   'unity-greeter-session.c',
   dependencies: [dep_glib, dep_gio],
   install:      true,
-  install_dir:  bindir,
 )

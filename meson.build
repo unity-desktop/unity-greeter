@@ -27,14 +27,7 @@ dep_pwquality   = dependency('pwquality')
 gnome = import('gnome')
 i18n  = import('i18n')
 
-prefix     = get_option('prefix')
-bindir     = prefix / get_option('bindir')
-datadir    = prefix / get_option('datadir')
-localedir  = prefix / get_option('localedir')
-sysconfdir = get_option('sysconfdir')
-
 gettext_package = meson.project_name()
-podir           = meson.project_source_root() / 'po'
 
 mirror_root = '/var/lib/unity-greeter'
 
@@ -43,7 +36,7 @@ mirror_conf.set('mirror_root', mirror_root)
 
 add_project_arguments(
   '-DGETTEXT_PACKAGE="' + gettext_package + '"',
-  '-DUNITY_GREETER_LOCALEDIR="' + localedir + '"',
+  '-DUNITY_GREETER_LOCALEDIR="' + get_option('prefix') / get_option('localedir') + '"',
   '-DUNITY_GREETER_VERSION="' + meson.project_version() + '"',
   language: 'c',
 )
