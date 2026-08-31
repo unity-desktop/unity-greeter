@@ -20,19 +20,18 @@
 
 #include "unity-greeter-user-card.h"
 
-#include "unity-greeter-defs.h"
+#include "unity-greeter-visuals.h"
 
 struct _UnityGreeterUserCard
 {
   GtkBox parent_instance;
 
-  GtkButton  *card;
   GtkOverlay *frame;
   GtkPicture *wallpaper;
   AdwAvatar  *avatar;
   GtkLabel   *name_label;
 
-  UnityGreeterUser *user;
+  ActUser *user;
 };
 
 enum {
@@ -45,47 +44,8 @@ static guint signals[N_SIGNALS];
 G_DEFINE_FINAL_TYPE (UnityGreeterUserCard, unity_greeter_user_card, GTK_TYPE_BOX)
 
 static void
-apply_avatar_image (UnityGreeterUserCard *self)
-{
-  const gchar *icon = unity_greeter_user_get_icon_file (self->user);
-  if (icon == NULL || *icon == '\0')
-    {
-      adw_avatar_set_custom_image (self->avatar, NULL);
-      return;
-    }
-
-  g_autoptr (GdkTexture) texture = gdk_texture_new_from_filename (icon, NULL);
-  adw_avatar_set_custom_image (self->avatar,
-                               texture != NULL ? GDK_PAINTABLE (texture) : NULL);
-}
-
-static void
-apply_wallpaper (UnityGreeterUserCard *self)
-{
-  const gchar *name = unity_greeter_user_get_user_name (self->user);
-  if (name == NULL || *name == '\0')
-    return;
-
-  g_autofree gchar *path =
-    g_build_filename (UNITY_GREETER_MIRROR_ROOT, name, "card.png", NULL);
-  g_autoptr (GdkTexture) texture = gdk_texture_new_from_filename (path, NULL);
-
-  gtk_picture_set_paintable (self->wallpaper,
-                             texture != NULL ? GDK_PAINTABLE (texture) : NULL);
-}
-
-static void
-apply_name (UnityGreeterUserCard *self)
-{
-  const gchar *name = unity_greeter_user_get_display_name (self->user);
-  gtk_label_set_text (self->name_label, name != NULL ? name : "");
-  adw_avatar_set_text  (self->avatar,    name);
-}
-
-static void
 on_card_clicked (GtkButton *button, gpointer user_data)
 {
-  (void) button;
   g_signal_emit (UNITY_GREETER_USER_CARD (user_data), signals[SIGNAL_ACTIVATED], 0);
 }
 
@@ -114,11 +74,12 @@ unity_greeter_user_card_class_init (UnityGreeterUserCardClass *klass)
 
   gtk_widget_class_set_template_from_resource (
     widget_class, "/org/unity/Greeter/unity-greeter-user-card.ui");
-  gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserCard, card);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserCard, frame);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserCard, wallpaper);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserCard, avatar);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserCard, name_label);
+
+  gtk_widget_class_bind_template_callback (widget_class, on_card_clicked);
 
   gtk_widget_class_set_css_name (widget_class, "user-card");
 }
@@ -130,25 +91,22 @@ unity_greeter_user_card_init (UnityGreeterUserCard *self)
 }
 
 GtkWidget *
-unity_greeter_user_card_new (UnityGreeterUser *user)
+unity_greeter_user_card_new (ActUser *user)
 {
-  g_return_val_if_fail (UNITY_GREETER_IS_USER (user), NULL);
+  g_return_val_if_fail (ACT_IS_USER (user), NULL);
 
   UnityGreeterUserCard *self = g_object_new (UNITY_GREETER_TYPE_USER_CARD, NULL);
   self->user = g_object_ref (user);
 
   gtk_overlay_set_measure_overlay (self->frame, GTK_WIDGET (self->avatar), TRUE);
 
-  g_signal_connect (self->card, "clicked", G_CALLBACK (on_card_clicked), self);
-
-  apply_name (self);
-  apply_avatar_image (self);
-  apply_wallpaper (self);
+  unity_greeter_apply_identity (self->avatar, self->name_label, self->user);
+  unity_greeter_apply_wallpaper (self->wallpaper, self->user, "card.png");
 
   return GTK_WIDGET (self);
 }
 
-UnityGreeterUser *
+ActUser *
 unity_greeter_user_card_get_user (UnityGreeterUserCard *self)
 {
   g_return_val_if_fail (UNITY_GREETER_IS_USER_CARD (self), NULL);

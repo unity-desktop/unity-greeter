@@ -8,9 +8,10 @@
     <property name="halign">center</property>
     <property name="valign">center</property>
     <child>
-      <object class="GtkButton" id="card">
+      <object class="GtkButton">
         <property name="halign">center</property>
         <property name="overflow">hidden</property>
+        <signal name="clicked" handler="on_card_clicked" swapped="no"/>
         <style>
           <class name="card"/>
         </style>
