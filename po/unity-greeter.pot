@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: unity-greeter\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-17 19:32+0530\n"
+"POT-Creation-Date: 2026-08-31 22:56+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,119 +17,119 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/auth/unity-greeter-strength.c:47
+#: src/auth/unity-greeter-strength.c:53
 msgctxt "Password hint"
 msgid "The new password needs to be different from the old one"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:49
+#: src/auth/unity-greeter-strength.c:55
 msgctxt "Password hint"
 msgid "Try changing some letters and numbers"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:52
+#: src/auth/unity-greeter-strength.c:58
 msgctxt "Password hint"
 msgid "Try changing the password a bit more"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:54
+#: src/auth/unity-greeter-strength.c:60
 msgctxt "Password hint"
 msgid "A password without your user name would be stronger"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:56
+#: src/auth/unity-greeter-strength.c:62
 msgctxt "Password hint"
 msgid "Try to avoid using your name in the password"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:58
+#: src/auth/unity-greeter-strength.c:64
 msgctxt "Password hint"
 msgid "Try to avoid some of the words included in the password"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:60
+#: src/auth/unity-greeter-strength.c:66
 msgctxt "Password hint"
 msgid "Avoid common words"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:62
+#: src/auth/unity-greeter-strength.c:68
 msgctxt "Password hint"
 msgid "Try to avoid reordering existing words"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:64
+#: src/auth/unity-greeter-strength.c:70
 msgctxt "Password hint"
 msgid "Try to use more numbers"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:66
+#: src/auth/unity-greeter-strength.c:72
 msgctxt "Password hint"
 msgid "Try to use more uppercase letters"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:68
+#: src/auth/unity-greeter-strength.c:74
 msgctxt "Password hint"
 msgid "Try to use more lowercase letters"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:70
+#: src/auth/unity-greeter-strength.c:76
 msgctxt "Password hint"
 msgid "Try to use more special characters, like punctuation"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:72
+#: src/auth/unity-greeter-strength.c:78
 msgctxt "Password hint"
 msgid "Try to use a mixture of letters, numbers and punctuation"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:74
+#: src/auth/unity-greeter-strength.c:80
 msgctxt "Password hint"
 msgid "Try to avoid repeating the same character"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:76
+#: src/auth/unity-greeter-strength.c:82
 msgctxt "Password hint"
 msgid "Try to avoid repeating the same type of character"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:78
+#: src/auth/unity-greeter-strength.c:84
 msgctxt "Password hint"
 msgid "Try to avoid sequences like 1234 or abcd"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:80
+#: src/auth/unity-greeter-strength.c:86
 msgctxt "Password hint"
 msgid "Password needs to be longer"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:82
+#: src/auth/unity-greeter-strength.c:88
 msgctxt "Password hint"
 msgid "Mix uppercase and lowercase and try to use a number or two"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:84
+#: src/auth/unity-greeter-strength.c:90
 msgctxt "Password hint"
 msgid "Try adding more letters, numbers and punctuation"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:148
-msgctxt "Password strength"
-msgid "poor"
-msgstr ""
-
-#: src/auth/unity-greeter-strength.c:153
+#: src/auth/unity-greeter-strength.c:138
 msgctxt "Password strength"
 msgid "weak"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:158 src/auth/unity-greeter-strength.c:163
+#: src/auth/unity-greeter-strength.c:139 src/auth/unity-greeter-strength.c:140
 msgctxt "Password strength"
 msgid "strong"
 msgstr ""
 
-#: src/auth/unity-greeter-strength.c:168
+#: src/auth/unity-greeter-strength.c:141
 msgctxt "Password strength"
 msgid "excellent"
+msgstr ""
+
+#: src/auth/unity-greeter-strength.c:145
+#, c-format
+msgid "Password strength: %s"
 msgstr ""
 
 #: src/components/unity-greeter-session-dialog.ui:6
@@ -142,19 +142,19 @@ msgstr ""
 msgid "Choose the session to login with"
 msgstr ""
 
-#: src/components/unity-greeter-user-page.c:213
+#: src/components/unity-greeter-user-page.c:190
 msgid "No sessions installed"
 msgstr ""
 
-#: src/components/unity-greeter-user-page.c:223
+#: src/components/unity-greeter-user-page.c:200
 msgid "Session command is malformed"
 msgstr ""
 
-#: src/components/unity-greeter-user-page.c:239
+#: src/components/unity-greeter-user-page.c:215
 msgid "Incorrect password"
 msgstr ""
 
-#: src/components/unity-greeter-user-page.c:240
+#: src/components/unity-greeter-user-page.c:216
 msgid "Login failed"
 msgstr ""
 
@@ -179,13 +179,8 @@ msgstr ""
 msgid "Login"
 msgstr ""
 
-#: src/components/unity-greeter-user-setup-page.c:118
+#: src/components/unity-greeter-user-setup-page.c:73
 msgid "The passwords do not match."
-msgstr ""
-
-#: src/components/unity-greeter-user-setup-page.c:124
-#, c-format
-msgid "Password strength: %s"
 msgstr ""
 
 #: src/components/unity-greeter-user-setup-page.ui:7
@@ -205,7 +200,7 @@ msgstr ""
 msgid "Confirm password"
 msgstr ""
 
-#: src/main.c:119 src/unity-greeter.ui:6
+#: src/main.c:116 src/unity-greeter.ui:6
 msgid "Unity Greeter"
 msgstr ""
 
