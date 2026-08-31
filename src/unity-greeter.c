@@ -43,8 +43,8 @@ G_DEFINE_FINAL_TYPE (UnityGreeter, unity_greeter, ADW_TYPE_APPLICATION_WINDOW)
 static void
 on_card_activated (UnityGreeterUserCard *card, gpointer user_data)
 {
-  UnityGreeter     *self = UNITY_GREETER (user_data);
-  UnityGreeterUser *user = unity_greeter_user_card_get_user (card);
+  UnityGreeter *self = UNITY_GREETER (user_data);
+  ActUser      *user = unity_greeter_user_card_get_user (card);
 
   AdwNavigationPage *visible = adw_navigation_view_get_visible_page (self->nav);
   if (UNITY_GREETER_IS_USER_PAGE (visible) ||
@@ -52,7 +52,7 @@ on_card_activated (UnityGreeterUserCard *card, gpointer user_data)
     return;
 
   AdwNavigationPage *page =
-    unity_greeter_user_get_password_mode (user) == ACT_USER_PASSWORD_MODE_SET_AT_LOGIN
+    act_user_get_password_mode (user) == ACT_USER_PASSWORD_MODE_SET_AT_LOGIN
       ? unity_greeter_user_setup_page_new (user, self->sessions)
       : unity_greeter_user_page_new (user, self->sessions);
   adw_navigation_view_push (self->nav, page);
@@ -66,9 +66,9 @@ sync_cards (UnityGreeter *self)
   adw_wrap_box_remove_all (self->cards);
   for (guint i = 0; i < n; i++)
     {
-      g_autoptr (UnityGreeterUser) user =
-        UNITY_GREETER_USER (g_list_model_get_item (self->users, i));
+      ActUser *user = ACT_USER (g_list_model_get_item (self->users, i));
       GtkWidget *card = unity_greeter_user_card_new (user);
+      g_object_unref (user);
       g_signal_connect (card, "activated", G_CALLBACK (on_card_activated), self);
       adw_wrap_box_append (self->cards, card);
     }
@@ -81,7 +81,6 @@ on_users_changed (GListModel *model,
                   guint       added,
                   gpointer    user_data)
 {
-  (void) model; (void) position; (void) removed; (void) added;
   sync_cards (UNITY_GREETER (user_data));
 }
 
@@ -104,10 +103,6 @@ unity_greeter_class_init (UnityGreeterClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   object_class->dispose = unity_greeter_dispose;
-
-  g_type_ensure (UNITY_GREETER_TYPE_USER_CARD);
-  g_type_ensure (UNITY_GREETER_TYPE_USER_PAGE);
-  g_type_ensure (UNITY_GREETER_TYPE_USER_SETUP_PAGE);
 
   gtk_widget_class_set_template_from_resource (
     widget_class, "/org/unity/Greeter/unity-greeter.ui");
@@ -140,7 +135,7 @@ unity_greeter_new (GtkApplication *app,
                            G_CALLBACK (on_users_changed), self, G_CONNECT_DEFAULT);
   sync_cards (self);
 
-  unity_greeter_idle_watch (GTK_WINDOW (self));
+  unity_greeter_idle_watch ();
 
   return self;
 }

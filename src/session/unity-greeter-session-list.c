@@ -61,7 +61,6 @@ unity_greeter_session_class_init (UnityGreeterSessionClass *klass)
 static void
 unity_greeter_session_init (UnityGreeterSession *self)
 {
-  (void) self;
 }
 
 const gchar *unity_greeter_session_get_id            (UnityGreeterSession *self) { return self->id; }
@@ -115,10 +114,8 @@ session_from_desktop_file (const gchar *path, const gchar *filename)
 
   UnityGreeterSession *self = g_object_new (UNITY_GREETER_TYPE_SESSION, NULL);
 
-  gsize len = strlen (filename);
-  self->id = (len > 8 && g_str_has_suffix (filename, ".desktop"))
-             ? g_strndup (filename, len - 8)
-             : g_strdup (filename);
+  /* scan_dir_into only offers names that end in .desktop. */
+  self->id = g_strndup (filename, strlen (filename) - strlen (".desktop"));
 
   const gchar *name = g_app_info_get_display_name (G_APP_INFO (info));
   self->name = (name != NULL && *name != '\0') ? g_strdup (name) : g_strdup (self->id);
@@ -129,16 +126,10 @@ session_from_desktop_file (const gchar *path, const gchar *filename)
 
   self->command = g_strdup (command);
 
-  g_autofree gchar *names = g_desktop_app_info_get_string (info, "DesktopNames");
-  if (names != NULL && *names != '\0')
-    {
-      g_strdelimit (names, ";", ':');
-      gsize nl = strlen (names);
-      while (nl > 0 && names[nl - 1] == ':')
-        names[--nl] = '\0';
-      if (*names != '\0')
-        self->desktop_names = g_steal_pointer (&names);
-    }
+  g_auto (GStrv) names =
+    g_desktop_app_info_get_string_list (info, "DesktopNames", NULL);
+  if (names != NULL && names[0] != NULL)
+    self->desktop_names = g_strjoinv (":", names);
 
   return self;
 }
@@ -146,7 +137,6 @@ session_from_desktop_file (const gchar *path, const gchar *filename)
 static gint
 compare_by_name (gconstpointer a, gconstpointer b, gpointer user_data)
 {
-  (void) user_data;
   UnityGreeterSession *ua = UNITY_GREETER_SESSION ((gpointer) a);
   UnityGreeterSession *ub = UNITY_GREETER_SESSION ((gpointer) b);
   return g_strcmp0 (ua->name, ub->name);
@@ -202,22 +192,6 @@ unity_greeter_session_list_new (void)
   return G_LIST_MODEL (g_steal_pointer (&store));
 }
 
-GListModel *
-unity_greeter_session_list_new_from_dir (const gchar *dir)
-{
-  g_return_val_if_fail (dir != NULL, NULL);
-
-  g_autoptr (GListStore) store =
-    g_list_store_new (UNITY_GREETER_TYPE_SESSION);
-  g_autoptr (GHashTable) seen =
-    g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-
-  scan_dir_into (store, seen, dir);
-  g_list_store_sort (store, compare_by_name, NULL);
-
-  return G_LIST_MODEL (g_steal_pointer (&store));
-}
-
 UnityGreeterSession *
 unity_greeter_session_list_find (GListModel *model, const gchar *id)
 {
@@ -227,9 +201,9 @@ unity_greeter_session_list_find (GListModel *model, const gchar *id)
   guint n = g_list_model_get_n_items (model);
   for (guint i = 0; i < n; i++)
     {
-      UnityGreeterSession *session =
+      /* The model keeps a reference, so the match stays valid. */
+      g_autoptr (UnityGreeterSession) session =
         UNITY_GREETER_SESSION (g_list_model_get_item (model, i));
-      g_object_unref (session);
       if (g_strcmp0 (session->id, id) == 0)
         return session;
     }

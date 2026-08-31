@@ -25,8 +25,6 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
-#include "unity-greeter-defs.h"
-
 static gchar *
 newest_phoc_config (void)
 {
@@ -56,11 +54,8 @@ newest_phoc_config (void)
 }
 
 gint
-main (gint argc, gchar *argv[])
+main (void)
 {
-  (void) argc;
-  (void) argv;
-
   g_setenv ("GDK_BACKEND",   "wayland",      TRUE);
   g_setenv ("DCONF_PROFILE", "greetd",       TRUE);
   g_setenv ("WLR_BACKENDS",  "drm,libinput", TRUE);

@@ -31,7 +31,6 @@ struct _UnityGreeterConversation
   GObject parent_instance;
 
   AstalGreetGreeter *greeter;
-  gchar             *username;
 };
 
 enum {
@@ -83,7 +82,6 @@ on_prompt_request (AstalGreetGreeter        *greeter,
                    gboolean                  secret,
                    UnityGreeterConversation *self)
 {
-  (void) greeter;
   g_autofree gchar *clean = normalise_prompt_label (label);
   g_signal_emit (self, signals[SIGNAL_PROMPT], 0, clean, secret);
 }
@@ -103,7 +101,6 @@ on_secret_request (AstalGreetGreeter *g, const gchar *label, gpointer d)
 static void
 on_info_message (AstalGreetGreeter *g, const gchar *text, gpointer d)
 {
-  (void) g;
   UnityGreeterConversation *self = d;
   g_signal_emit (self, signals[SIGNAL_MESSAGE], 0, text != NULL ? text : "", FALSE);
 }
@@ -111,7 +108,6 @@ on_info_message (AstalGreetGreeter *g, const gchar *text, gpointer d)
 static void
 on_error_message (AstalGreetGreeter *g, const gchar *text, gpointer d)
 {
-  (void) g;
   UnityGreeterConversation *self = d;
   g_signal_emit (self, signals[SIGNAL_MESSAGE], 0, text != NULL ? text : "", TRUE);
 }
@@ -119,7 +115,6 @@ on_error_message (AstalGreetGreeter *g, const gchar *text, gpointer d)
 static void
 on_authenticated (AstalGreetGreeter *g, gpointer d)
 {
-  (void) g;
   UnityGreeterConversation *self = d;
   g_signal_emit (self, signals[SIGNAL_AUTHENTICATED], 0);
 }
@@ -127,7 +122,6 @@ on_authenticated (AstalGreetGreeter *g, gpointer d)
 static void
 on_cancelled (AstalGreetGreeter *g, AstalGreetError *e, gpointer d)
 {
-  (void) g;
   UnityGreeterConversation *self = d;
 
   gboolean is_auth =
@@ -162,8 +156,7 @@ unity_greeter_conversation_begin (UnityGreeterConversation *self,
   g_signal_connect_object (self->greeter, "cancelled",
                            G_CALLBACK (on_cancelled), self, G_CONNECT_DEFAULT);
 
-  g_set_str (&self->username, username);
-  astal_greet_greeter_create_session (self->greeter, self->username);
+  astal_greet_greeter_create_session (self->greeter, username);
 }
 
 void
@@ -213,19 +206,10 @@ unity_greeter_conversation_dispose (GObject *object)
 }
 
 static void
-unity_greeter_conversation_finalize (GObject *object)
-{
-  UnityGreeterConversation *self = UNITY_GREETER_CONVERSATION (object);
-  g_clear_pointer (&self->username, g_free);
-  G_OBJECT_CLASS (unity_greeter_conversation_parent_class)->finalize (object);
-}
-
-static void
 unity_greeter_conversation_class_init (UnityGreeterConversationClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
-  object_class->dispose  = unity_greeter_conversation_dispose;
-  object_class->finalize = unity_greeter_conversation_finalize;
+  object_class->dispose = unity_greeter_conversation_dispose;
 
   signals[SIGNAL_PROMPT] = g_signal_new (
     "prompt", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST,
@@ -247,7 +231,6 @@ unity_greeter_conversation_class_init (UnityGreeterConversationClass *klass)
 static void
 unity_greeter_conversation_init (UnityGreeterConversation *self)
 {
-  (void) self;
 }
 
 UnityGreeterConversation *

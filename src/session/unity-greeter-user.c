@@ -22,62 +22,18 @@
 
 #define ACCOUNTS_SERVICE_BUS_NAME "org.freedesktop.Accounts"
 
-struct _UnityGreeterUser
-{
-  GObject parent_instance;
-  ActUser *act_user;
-};
-
-G_DEFINE_FINAL_TYPE (UnityGreeterUser, unity_greeter_user, G_TYPE_OBJECT)
-
-static void
-unity_greeter_user_dispose (GObject *object)
-{
-  UnityGreeterUser *self = UNITY_GREETER_USER (object);
-  g_clear_object (&self->act_user);
-  G_OBJECT_CLASS (unity_greeter_user_parent_class)->dispose (object);
-}
-
-static void
-unity_greeter_user_class_init (UnityGreeterUserClass *klass)
-{
-  G_OBJECT_CLASS (klass)->dispose = unity_greeter_user_dispose;
-}
-
-static void
-unity_greeter_user_init (UnityGreeterUser *self)
-{
-  (void) self;
-}
-
-UnityGreeterUser *
-unity_greeter_user_new (ActUser *user)
-{
-  g_return_val_if_fail (ACT_IS_USER (user), NULL);
-  UnityGreeterUser *self = g_object_new (UNITY_GREETER_TYPE_USER, NULL);
-  self->act_user = g_object_ref (user);
-  return self;
-}
-
-const gchar *unity_greeter_user_get_user_name       (UnityGreeterUser *self) { return act_user_get_user_name (self->act_user); }
-const gchar *unity_greeter_user_get_icon_file       (UnityGreeterUser *self) { return act_user_get_icon_file (self->act_user); }
-gint         unity_greeter_user_get_login_frequency (UnityGreeterUser *self) { return act_user_get_login_frequency (self->act_user); }
-gint         unity_greeter_user_get_password_mode   (UnityGreeterUser *self) { return (gint) act_user_get_password_mode (self->act_user); }
-const gchar *unity_greeter_user_get_session         (UnityGreeterUser *self) { return act_user_get_session (self->act_user); }
-
 const gchar *
-unity_greeter_user_get_display_name (UnityGreeterUser *self)
+unity_greeter_user_display_name (ActUser *user)
 {
-  const gchar *real = act_user_get_real_name (self->act_user);
+  const gchar *real = act_user_get_real_name (user);
   if (real != NULL && *real != '\0')
     return real;
-  return act_user_get_user_name (self->act_user);
+  return act_user_get_user_name (user);
 }
 
 static void
 on_set_session_done (GObject *source, GAsyncResult *result, gpointer user_data)
 {
-  (void) user_data;
   g_autoptr (GError) error = NULL;
   g_autoptr (GVariant) reply =
     g_dbus_connection_call_finish (G_DBUS_CONNECTION (source), result, &error);
@@ -86,12 +42,12 @@ on_set_session_done (GObject *source, GAsyncResult *result, gpointer user_data)
 }
 
 void
-unity_greeter_user_persist_session (UnityGreeterUser *self, const gchar *session_id)
+unity_greeter_user_persist_session (ActUser *user, const gchar *session_id)
 {
-  g_return_if_fail (UNITY_GREETER_IS_USER (self));
+  g_return_if_fail (ACT_IS_USER (user));
   g_return_if_fail (session_id != NULL);
 
-  const gchar *path = act_user_get_object_path (self->act_user);
+  const gchar *path = act_user_get_object_path (user);
   if (path == NULL)
     return;
 
@@ -116,21 +72,19 @@ unity_greeter_user_persist_session (UnityGreeterUser *self, const gchar *session
 }
 
 void
-unity_greeter_user_set_password (UnityGreeterUser *self,
-                                 const gchar      *password)
+unity_greeter_user_set_password (ActUser *user, const gchar *password)
 {
-  g_return_if_fail (UNITY_GREETER_IS_USER (self));
+  g_return_if_fail (ACT_IS_USER (user));
   g_return_if_fail (password != NULL);
 
-  act_user_set_password (self->act_user, password, "");
+  act_user_set_password (user, password, "");
 }
 
 static gint
 compare_by_login_frequency (gconstpointer a, gconstpointer b, gpointer user_data)
 {
-  (void) user_data;
-  gint fa = unity_greeter_user_get_login_frequency ((UnityGreeterUser *) a);
-  gint fb = unity_greeter_user_get_login_frequency ((UnityGreeterUser *) b);
+  gint fa = act_user_get_login_frequency ((ActUser *) a);
+  gint fb = act_user_get_login_frequency ((ActUser *) b);
   return fb - fa;
 }
 
@@ -148,8 +102,7 @@ populate_from_manager (GListStore *store, ActUserManager *manager)
       if (act_user_get_locked (user))
         continue;
 
-      g_autoptr (UnityGreeterUser) wrapped = unity_greeter_user_new (user);
-      g_list_store_append (store, wrapped);
+      g_list_store_append (store, user);
     }
   g_slist_free (users);
 
@@ -159,7 +112,6 @@ populate_from_manager (GListStore *store, ActUserManager *manager)
 static void
 on_manager_notify_loaded (GObject *object, GParamSpec *pspec, gpointer store_ptr)
 {
-  (void) pspec;
   gboolean is_loaded = FALSE;
   g_object_get (object, "is-loaded", &is_loaded, NULL);
   if (is_loaded)
@@ -169,9 +121,10 @@ on_manager_notify_loaded (GObject *object, GParamSpec *pspec, gpointer store_ptr
 GListModel *
 unity_greeter_users_new (void)
 {
-  GListStore *store = g_list_store_new (UNITY_GREETER_TYPE_USER);
+  GListStore *store = g_list_store_new (ACT_TYPE_USER);
   ActUserManager *manager = g_object_ref (act_user_manager_get_default ());
 
+  /* The store owns the manager: get_default is (transfer none). */
   g_object_set_data_full (G_OBJECT (store), "act-manager",
                           manager, g_object_unref);
 
