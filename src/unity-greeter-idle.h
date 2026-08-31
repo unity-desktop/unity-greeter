@@ -20,28 +20,14 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 
-/**
- * unity_greeter_idle_watch:
- * @window: the greeter's root window.
- *
- * Starts watching the seat for inactivity and reacts in two steps.
- *
- * After 2 minutes of no input the greeter asks the compositor to power
- * every output off. Any input turns the outputs back on.
- *
- * After 3 minutes of no input the greeter asks logind to suspend the
- * machine.
- *
- * The output step needs the compositor to support
- * `wlr-output-power-management-unstable-v1`. On a compositor without
- * this protocol the greeter still suspends after 3 minutes but the
- * outputs stay on. The whole watcher does nothing on a compositor
- * without `ext-idle-notify-v1`.
- */
-void unity_greeter_idle_watch (GtkWindow *window);
+/* Watches the seat for inactivity: powers every output off after 2
+   minutes, asks logind to suspend after 3. The output step needs
+   wlr-output-power-management-unstable-v1; the whole watcher needs
+   ext-idle-notify-v1 and does nothing without it. Call once. */
+void unity_greeter_idle_watch (void);
 
 G_END_DECLS

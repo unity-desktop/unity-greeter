@@ -21,6 +21,7 @@ dep_act        = dependency('accountsservice', version: '>= 23.13.9')
 dep_astalgreet  = dependency('astal-greet-0.1')
 dep_astallogind = dependency('astal-logind-0.1')
 dep_astalwl     = dependency('astal-wl-0.1')
+dep_astalidle   = dependency('astal-idle-notify-0.1')
 dep_astalwlr    = dependency('astal-wlr-0.1')
 dep_pwquality   = dependency('pwquality')
 
@@ -38,6 +39,8 @@ add_project_arguments(
   '-DGETTEXT_PACKAGE="' + gettext_package + '"',
   '-DUNITY_GREETER_LOCALEDIR="' + get_option('prefix') / get_option('localedir') + '"',
   '-DUNITY_GREETER_VERSION="' + meson.project_version() + '"',
+  '-DUNITY_GREETER_MIRROR_ROOT="' + mirror_root + '"',
+  '-Wno-unused-parameter',
   language: 'c',
 )
 

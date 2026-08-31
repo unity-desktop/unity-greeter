@@ -20,6 +20,7 @@
 
 #include "unity-greeter-idle.h"
 
+#include <astal-idle-notify.h>
 #include <astal-logind.h>
 #include <astal-wl.h>
 #include <astal-wlr.h>
@@ -29,8 +30,10 @@
 
 typedef struct
 {
-  AstalWlrOutputPowerManager *power_manager;
-  GPtrArray                  *power_controls;
+  AstalWlrOutputPowerManager  *power_manager;
+  GPtrArray                   *power_controls;
+  AstalIdleNotifyNotification *blank;
+  AstalIdleNotifyNotification *suspend;
 } Idle;
 
 static void
@@ -65,25 +68,20 @@ power_outputs (Idle *idle, AstalWlrOutputPowerMode mode)
 }
 
 static void
-on_blank_idled (AstalWlIdleNotification *n, gpointer data)
+on_blank_idled (AstalIdleNotifyNotification *n, gpointer data)
 {
-  (void) n;
   power_outputs (data, ASTAL_WLR_OUTPUT_POWER_MODE_OFF);
 }
 
 static void
-on_blank_resumed (AstalWlIdleNotification *n, gpointer data)
+on_blank_resumed (AstalIdleNotifyNotification *n, gpointer data)
 {
-  (void) n;
   power_outputs (data, ASTAL_WLR_OUTPUT_POWER_MODE_ON);
 }
 
 static void
-on_suspend_idled (AstalWlIdleNotification *n, gpointer data)
+on_suspend_idled (AstalIdleNotifyNotification *n, gpointer data)
 {
-  (void) n;
-  (void) data;
-
   AstalLogindLogind *logind = astal_logind_get_default ();
   if (logind == NULL)
     {
@@ -94,35 +92,55 @@ on_suspend_idled (AstalWlIdleNotification *n, gpointer data)
 }
 
 void
-unity_greeter_idle_watch (GtkWindow *window)
+unity_greeter_idle_watch (void)
 {
-  g_return_if_fail (GTK_IS_WINDOW (window));
-
   /* Pre-warm astal-logind so can_suspend has settled by the time the
      3-minute notification fires. */
   astal_logind_get_default ();
 
-  AstalWlIdleNotifier *notifier = astal_wl_idle_notifier_get_default ();
-  if (notifier == NULL)
+  /* astal-idle-notify aborts on a compositor without the protocol, so
+     ask before touching the notifier. */
+  if (!astal_idle_notify_is_supported ())
     {
-      g_warning ("idle: compositor lacks ext-idle-notify-v1, skipping");
+      g_warning ("idle: compositor lacks ext-idle-notifier-v1, skipping");
       return;
     }
 
-  Idle *idle = g_new0 (Idle, 1);
-  idle->power_manager  = astal_wlr_output_power_manager_get_default ();
-  idle->power_controls = g_ptr_array_new_with_free_func (g_object_unref);
+  /* The list holds weak references, so freeing it leaves the seat alone. */
+  GList       *seats = astal_wl_registry_get_seats (astal_wl_registry_get_default ());
+  AstalWlSeat *seat  = seats != NULL ? seats->data : NULL;
+  g_list_free (seats);
 
-  AstalWlIdleNotification *blank_noti =
-    astal_wl_idle_notifier_get_notification (notifier, BLANK_TIMEOUT_MS);
-  if (blank_noti != NULL && idle->power_manager != NULL)
+  if (seat == NULL)
     {
-      g_signal_connect (blank_noti, "idled",   G_CALLBACK (on_blank_idled),   idle);
-      g_signal_connect (blank_noti, "resumed", G_CALLBACK (on_blank_resumed), idle);
+      g_warning ("idle: no wayland seat, skipping");
+      return;
     }
 
-  AstalWlIdleNotification *suspend_noti =
-    astal_wl_idle_notifier_get_notification (notifier, SUSPEND_TIMEOUT_MS);
-  if (suspend_noti != NULL)
-    g_signal_connect (suspend_noti, "idled", G_CALLBACK (on_suspend_idled), idle);
+  /* The watcher runs for the life of the process, so its state is static
+     rather than heap-allocated and never freed. */
+  static Idle idle;
+
+  idle.power_manager  = astal_wlr_output_power_manager_get_default ();
+  idle.power_controls = g_ptr_array_new_with_free_func (g_object_unref);
+
+  AstalIdleNotifyNotifier *notifier = astal_idle_notify_get_default ();
+
+  /* Each notification owns its wayland listener: dropping the object
+     stops the signals, so both are kept. */
+  idle.blank =
+    astal_idle_notify_notifier_get_idle_notification_for_seat (notifier,
+                                                               BLANK_TIMEOUT_MS,
+                                                               seat);
+  if (idle.power_manager != NULL)
+    {
+      g_signal_connect (idle.blank, "idled",   G_CALLBACK (on_blank_idled),   &idle);
+      g_signal_connect (idle.blank, "resumed", G_CALLBACK (on_blank_resumed), &idle);
+    }
+
+  idle.suspend =
+    astal_idle_notify_notifier_get_idle_notification_for_seat (notifier,
+                                                               SUSPEND_TIMEOUT_MS,
+                                                               seat);
+  g_signal_connect (idle.suspend, "idled", G_CALLBACK (on_suspend_idled), &idle);
 }
