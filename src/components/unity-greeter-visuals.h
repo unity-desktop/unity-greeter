@@ -34,6 +34,8 @@ void unity_greeter_apply_wallpaper (GtkPicture       *picture,
                                     ActUser *user,
                                     const gchar      *basename);
 
+void unity_greeter_clear_status    (GtkLabel         *label);
+
 void unity_greeter_set_status_text (GtkLabel         *label,
                                     const gchar      *text,
                                     gboolean          is_error);

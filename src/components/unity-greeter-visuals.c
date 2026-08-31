@@ -56,15 +56,26 @@ unity_greeter_apply_wallpaper (GtkPicture       *picture,
                              tex != NULL ? GDK_PAINTABLE (tex) : NULL);
 }
 
+void
+unity_greeter_clear_status (GtkLabel *label)
+{
+  gtk_widget_set_visible (GTK_WIDGET (label), FALSE);
+  gtk_widget_remove_css_class (GTK_WIDGET (label), "error");
+  gtk_widget_remove_css_class (GTK_WIDGET (label), "dim-label");
+}
+
 /* One status line: hidden when empty, red when it reports a failure. */
 void
 unity_greeter_set_status_text (GtkLabel    *label,
                                const gchar *text,
                                gboolean     is_error)
 {
-  gtk_label_set_text (label, text != NULL ? text : "");
-  gtk_widget_set_visible (GTK_WIDGET (label), text != NULL && *text != '\0');
-  gtk_widget_remove_css_class (GTK_WIDGET (label), "error");
-  gtk_widget_remove_css_class (GTK_WIDGET (label), "dim-label");
-  gtk_widget_add_css_class    (GTK_WIDGET (label), is_error ? "error" : "dim-label");
+  unity_greeter_clear_status (label);
+
+  if (text == NULL || *text == '\0')
+    return;
+
+  gtk_label_set_text (label, text);
+  gtk_widget_add_css_class (GTK_WIDGET (label), is_error ? "error" : "dim-label");
+  gtk_widget_set_visible   (GTK_WIDGET (label), TRUE);
 }

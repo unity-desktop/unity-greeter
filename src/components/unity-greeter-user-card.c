@@ -50,6 +50,14 @@ on_card_clicked (GtkButton *button, gpointer user_data)
 }
 
 static void
+on_user_changed (ActUser *user, gpointer data)
+{
+  UnityGreeterUserCard *self = data;
+  unity_greeter_apply_identity  (self->avatar, self->name_label, user);
+  unity_greeter_apply_wallpaper (self->wallpaper, user, "card.png");
+}
+
+static void
 unity_greeter_user_card_dispose (GObject *object)
 {
   UnityGreeterUserCard *self = UNITY_GREETER_USER_CARD (object);
@@ -102,6 +110,9 @@ unity_greeter_user_card_new (ActUser *user)
 
   unity_greeter_apply_identity (self->avatar, self->name_label, self->user);
   unity_greeter_apply_wallpaper (self->wallpaper, self->user, "card.png");
+
+  g_signal_connect_object (self->user, "changed",
+                           G_CALLBACK (on_user_changed), self, G_CONNECT_DEFAULT);
 
   return GTK_WIDGET (self);
 }

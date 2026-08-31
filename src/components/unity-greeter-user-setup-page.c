@@ -115,6 +115,14 @@ on_page_shown (AdwNavigationPage *page, gpointer user_data)
 }
 
 static void
+on_user_changed (ActUser *user, gpointer data)
+{
+  UnityGreeterUserSetupPage *self = data;
+  unity_greeter_apply_identity  (self->avatar, self->name_label, user);
+  unity_greeter_apply_wallpaper (self->wallpaper, user, "background.png");
+}
+
+static void
 unity_greeter_user_setup_page_dispose (GObject *object)
 {
   UnityGreeterUserSetupPage *self = UNITY_GREETER_USER_SETUP_PAGE (object);
@@ -168,6 +176,8 @@ unity_greeter_user_setup_page_new (ActUser *user, GListModel *sessions)
 
   unity_greeter_apply_identity (self->avatar, self->name_label, self->user);
   unity_greeter_apply_wallpaper (self->wallpaper, self->user, "background.png");
+  g_signal_connect_object (self->user, "changed",
+                           G_CALLBACK (on_user_changed), self, G_CONNECT_DEFAULT);
   validate (self);
 
   return ADW_NAVIGATION_PAGE (self);

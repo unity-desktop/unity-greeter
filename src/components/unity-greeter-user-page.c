@@ -178,7 +178,7 @@ on_authenticated (UnityGreeterConversation *conv, gpointer user_data)
 {
   UnityGreeterUserPage *self = user_data;
 
-  unity_greeter_set_status_text (self->message, NULL, FALSE);
+  unity_greeter_clear_status (self->message);
   set_busy (self, TRUE);
 
   if (self->selected_session != NULL)
@@ -232,6 +232,14 @@ on_page_shown (AdwNavigationPage *page, gpointer user_data)
   UnityGreeterUserPage *self = UNITY_GREETER_USER_PAGE (page);
   if (g_strcmp0 (adw_view_stack_get_visible_child_name (self->stack), "form") == 0)
     gtk_widget_grab_focus (GTK_WIDGET (self->entry));
+}
+
+static void
+on_user_changed (ActUser *user, gpointer data)
+{
+  UnityGreeterUserPage *self = data;
+  unity_greeter_apply_identity  (self->avatar, self->name_label, user);
+  unity_greeter_apply_wallpaper (self->wallpaper, user, "background.png");
 }
 
 static void
@@ -340,6 +348,8 @@ unity_greeter_user_page_new (ActUser *user, GListModel *sessions)
 
   unity_greeter_apply_identity (self->avatar, self->name_label, self->user);
   unity_greeter_apply_wallpaper (self->wallpaper, self->user, "background.png");
+  g_signal_connect_object (self->user, "changed",
+                           G_CALLBACK (on_user_changed), self, G_CONNECT_DEFAULT);
   apply_session_defaults (self);
   sync_caps_warning (self);
 
