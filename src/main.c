@@ -85,7 +85,6 @@ apply_appearance (void)
 static void
 on_startup (GApplication *app, gpointer user_data)
 {
-  (void) app;
   AppState *state = user_data;
 
   apply_appearance ();
@@ -105,10 +104,8 @@ on_activate (GApplication *app, gpointer user_data)
 }
 
 gint
-main (gint argc, gchar *argv[])
+main (void)
 {
-  (void) argc;
-
   g_log_set_writer_func (g_log_writer_journald, NULL, NULL);
 
   setlocale (LC_ALL, "");
@@ -127,8 +124,7 @@ main (gint argc, gchar *argv[])
   g_signal_connect (app, "startup",  G_CALLBACK (on_startup),  &state);
   g_signal_connect (app, "activate", G_CALLBACK (on_activate), &state);
 
-  gchar *forwarded[] = { argv[0], NULL };
-  gint rc = g_application_run (G_APPLICATION (app), 1, forwarded);
+  gint rc = g_application_run (G_APPLICATION (app), 0, NULL);
 
   g_clear_object (&state.users);
   g_clear_object (&state.sessions);

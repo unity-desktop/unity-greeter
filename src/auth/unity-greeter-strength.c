@@ -30,13 +30,19 @@
 #include <glib/gi18n.h>
 #include <pwquality.h>
 
-struct _UnityGreeterStrength
+static pwquality_settings_t *
+pw_settings (void)
 {
-  GObject               parent_instance;
-  pwquality_settings_t *settings;
-};
+  static pwquality_settings_t *settings;
 
-G_DEFINE_FINAL_TYPE (UnityGreeterStrength, unity_greeter_strength, G_TYPE_OBJECT)
+  if (settings == NULL)
+    {
+      settings = pwquality_default_settings ();
+      if (settings != NULL)
+        pwquality_read_config (settings, NULL, NULL);
+    }
+  return settings;
+}
 
 static const gchar *
 hint_for_pwq_error (gint error)
@@ -94,42 +100,13 @@ pw_min_length (pwquality_settings_t *settings)
   return value;
 }
 
-static void
-unity_greeter_strength_finalize (GObject *object)
-{
-  UnityGreeterStrength *self = UNITY_GREETER_STRENGTH (object);
-  g_clear_pointer (&self->settings, pwquality_free_settings);
-  G_OBJECT_CLASS (unity_greeter_strength_parent_class)->finalize (object);
-}
-
-static void
-unity_greeter_strength_class_init (UnityGreeterStrengthClass *klass)
-{
-  G_OBJECT_CLASS (klass)->finalize = unity_greeter_strength_finalize;
-}
-
-static void
-unity_greeter_strength_init (UnityGreeterStrength *self)
-{
-  self->settings = pwquality_default_settings ();
-  if (self->settings != NULL)
-    pwquality_read_config (self->settings, NULL, NULL);
-}
-
-UnityGreeterStrength *
-unity_greeter_strength_new (void)
-{
-  return g_object_new (UNITY_GREETER_TYPE_STRENGTH, NULL);
-}
-
 gchar *
-unity_greeter_strength_check (UnityGreeterStrength *self,
-                              const gchar          *password,
-                              const gchar          *username,
-                              gboolean             *out_is_error,
-                              gint                 *out_level)
+unity_greeter_strength_check (const gchar *password,
+                              const gchar *username,
+                              gboolean    *out_is_error,
+                              gint        *out_level)
 {
-  g_return_val_if_fail (UNITY_GREETER_IS_STRENGTH (self), NULL);
+  pwquality_settings_t *settings = pw_settings ();
 
   gint length = password != NULL ? (gint) strlen (password) : 0;
   if (length == 0)
@@ -140,15 +117,15 @@ unity_greeter_strength_check (UnityGreeterStrength *self,
     }
 
   void *aux = NULL;
-  gint  rv  = self->settings != NULL
-                ? pwquality_check (self->settings, password, NULL, username, &aux)
+  gint  rv  = settings != NULL
+                ? pwquality_check (settings, password, NULL, username, &aux)
                 : -1;
 
   /* pwquality rejected the candidate: return the improvement hint on its
      own so the reader gets an actionable phrase, not a "strength: X" one. */
   if (rv < 0)
     {
-      gint code = (length < pw_min_length (self->settings))
+      gint code = (length < pw_min_length (settings))
                     ? PWQ_ERROR_MIN_LENGTH : rv;
       if (out_is_error != NULL) *out_is_error = TRUE;
       if (out_level != NULL)    *out_level    = 1;

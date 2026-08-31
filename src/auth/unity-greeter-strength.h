@@ -20,54 +20,16 @@
 
 #pragma once
 
-#include <glib-object.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 
-/**
- * UNITY_GREETER_TYPE_STRENGTH:
- *
- * Type identifier for #UnityGreeterStrength.
- */
-#define UNITY_GREETER_TYPE_STRENGTH (unity_greeter_strength_get_type ())
-
-/**
- * UnityGreeterStrength:
- *
- * Wraps libpwquality. Loads the system configuration once and answers
- * strength queries about candidate passwords.
- */
-G_DECLARE_FINAL_TYPE (UnityGreeterStrength, unity_greeter_strength,
-                      UNITY_GREETER, STRENGTH, GObject)
-
-/**
- * unity_greeter_strength_new:
- *
- * Loads the system pwquality configuration.
- *
- * Returns: (transfer full): a new #UnityGreeterStrength.
- */
-UnityGreeterStrength *unity_greeter_strength_new (void);
-
-/**
- * unity_greeter_strength_check:
- * @self: a #UnityGreeterStrength.
- * @password: candidate password.
- * @username: (nullable): the account name.
- * @out_is_error: (out): %TRUE when the returned message is a rejection.
- * @out_level: (out): score band from 0 (empty) through 5 (excellent).
- *
- * Returns a single localised line describing the candidate. On a
- * pwquality rejection the line is the improvement hint. Otherwise it
- * reads "Password strength: weak" (or strong, excellent, and so on).
- * Returns %NULL when @password is empty.
- *
- * Returns: (nullable) (transfer full): a newly allocated message.
- */
-gchar *unity_greeter_strength_check (UnityGreeterStrength *self,
-                                     const gchar          *password,
-                                     const gchar          *username,
-                                     gboolean             *out_is_error,
-                                     gint                 *out_level);
+/* Returns one localised line about @password: the pwquality improvement
+   hint when it is rejected, otherwise "Password strength: <band>".
+   Returns NULL for an empty password. @out_level runs 0 (empty) to 5. */
+gchar *unity_greeter_strength_check (const gchar *password,
+                                     const gchar *username,
+                                     gboolean    *out_is_error,
+                                     gint        *out_level);
 
 G_END_DECLS
