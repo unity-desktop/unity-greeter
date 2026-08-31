@@ -22,9 +22,9 @@
 
 #include <glib/gi18n.h>
 
-#include "unity-greeter-defs.h"
 #include "unity-greeter-strength.h"
 #include "unity-greeter-user-page.h"
+#include "unity-greeter-visuals.h"
 
 #define STRENGTH_ACCEPT_LEVEL 2
 
@@ -40,72 +40,25 @@ struct _UnityGreeterUserSetupPage
   GtkLevelBar         *strength_bar;
   GtkLabel            *hint_label;
   AdwButtonRow        *submit_button;
-  GtkButton           *back;
 
-  UnityGreeterUser     *user;
-  GListModel           *sessions;
-  UnityGreeterStrength *strength;
+  ActUser *user;
+  GListModel       *sessions;
 };
 
 G_DEFINE_FINAL_TYPE (UnityGreeterUserSetupPage, unity_greeter_user_setup_page,
                      ADW_TYPE_NAVIGATION_PAGE)
 
 static void
-apply_identity (UnityGreeterUserSetupPage *self)
-{
-  const gchar *display = unity_greeter_user_get_display_name (self->user);
-  adw_avatar_set_text (self->avatar, display);
-  gtk_label_set_text  (self->name_label, display != NULL ? display : "");
-
-  const gchar *icon = unity_greeter_user_get_icon_file (self->user);
-  if (icon == NULL || *icon == '\0')
-    return;
-
-  g_autoptr (GdkTexture) tex = gdk_texture_new_from_filename (icon, NULL);
-  if (tex != NULL)
-    adw_avatar_set_custom_image (self->avatar, GDK_PAINTABLE (tex));
-}
-
-static void
-apply_wallpaper (UnityGreeterUserSetupPage *self)
-{
-  const gchar *user_name = unity_greeter_user_get_user_name (self->user);
-  if (user_name == NULL || *user_name == '\0')
-    return;
-
-  g_autofree gchar *bg =
-    g_build_filename (UNITY_GREETER_MIRROR_ROOT, user_name, "background.png", NULL);
-  g_autoptr (GdkTexture) tex = gdk_texture_new_from_filename (bg, NULL);
-  if (tex != NULL)
-    gtk_picture_set_paintable (self->wallpaper, GDK_PAINTABLE (tex));
-}
-
-static void
-show_hint (UnityGreeterUserSetupPage *self,
-           const gchar               *text,
-           gboolean                   is_error)
-{
-  gtk_label_set_text (self->hint_label, text != NULL ? text : "");
-  gtk_widget_set_visible (GTK_WIDGET (self->hint_label),
-                          text != NULL && *text != '\0');
-  gtk_widget_remove_css_class (GTK_WIDGET (self->hint_label), "error");
-  gtk_widget_remove_css_class (GTK_WIDGET (self->hint_label), "dim-label");
-  gtk_widget_add_css_class    (GTK_WIDGET (self->hint_label),
-                               is_error ? "error" : "dim-label");
-}
-
-static void
 validate (UnityGreeterUserSetupPage *self)
 {
   const gchar *password = gtk_editable_get_text (GTK_EDITABLE (self->entry));
   const gchar *confirm  = gtk_editable_get_text (GTK_EDITABLE (self->confirm_entry));
-  const gchar *username = unity_greeter_user_get_user_name (self->user);
+  const gchar *username = act_user_get_user_name (self->user);
 
   gboolean is_error = FALSE;
   gint     level    = 0;
   g_autofree gchar *message =
-    unity_greeter_strength_check (self->strength, password, username,
-                                  &is_error, &level);
+    unity_greeter_strength_check (password, username, &is_error, &level);
 
   gtk_level_bar_set_value (self->strength_bar, level);
 
@@ -117,9 +70,9 @@ validate (UnityGreeterUserSetupPage *self)
   /* Mismatch beats strength: if the two fields disagree the visitor
      needs to know that first, so it takes over the hint line. */
   if (confirm_typed && !match)
-    show_hint (self, _("The passwords do not match."), TRUE);
+    unity_greeter_set_status_text (self->hint_label, _("The passwords do not match."), TRUE);
   else
-    show_hint (self, message, is_error);
+    unity_greeter_set_status_text (self->hint_label, message, is_error);
 
   gtk_widget_set_sensitive (GTK_WIDGET (self->submit_button),
                             strong_enough && match);
@@ -128,15 +81,12 @@ validate (UnityGreeterUserSetupPage *self)
 static void
 on_entry_changed (GtkEditable *editable, UnityGreeterUserSetupPage *self)
 {
-  (void) editable;
   validate (self);
 }
 
 static void
 on_submit (GtkWidget *source, UnityGreeterUserSetupPage *self)
 {
-  (void) source;
-
   if (!gtk_widget_get_sensitive (GTK_WIDGET (self->submit_button)))
     return;
 
@@ -160,7 +110,6 @@ on_submit (GtkWidget *source, UnityGreeterUserSetupPage *self)
 static void
 on_page_shown (AdwNavigationPage *page, gpointer user_data)
 {
-  (void) user_data;
   UnityGreeterUserSetupPage *self = UNITY_GREETER_USER_SETUP_PAGE (page);
   gtk_widget_grab_focus (GTK_WIDGET (self->entry));
 }
@@ -170,7 +119,6 @@ unity_greeter_user_setup_page_dispose (GObject *object)
 {
   UnityGreeterUserSetupPage *self = UNITY_GREETER_USER_SETUP_PAGE (object);
   gtk_widget_dispose_template (GTK_WIDGET (self), UNITY_GREETER_TYPE_USER_SETUP_PAGE);
-  g_clear_object (&self->strength);
   g_clear_object (&self->sessions);
   g_clear_object (&self->user);
   G_OBJECT_CLASS (unity_greeter_user_setup_page_parent_class)->dispose (object);
@@ -195,7 +143,6 @@ unity_greeter_user_setup_page_class_init (UnityGreeterUserSetupPageClass *klass)
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserSetupPage, strength_bar);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserSetupPage, hint_label);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserSetupPage, submit_button);
-  gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserSetupPage, back);
 
   gtk_widget_class_bind_template_callback (widget_class, on_page_shown);
   gtk_widget_class_bind_template_callback (widget_class, on_entry_changed);
@@ -209,19 +156,18 @@ unity_greeter_user_setup_page_init (UnityGreeterUserSetupPage *self)
 }
 
 AdwNavigationPage *
-unity_greeter_user_setup_page_new (UnityGreeterUser *user, GListModel *sessions)
+unity_greeter_user_setup_page_new (ActUser *user, GListModel *sessions)
 {
-  g_return_val_if_fail (UNITY_GREETER_IS_USER (user), NULL);
+  g_return_val_if_fail (ACT_IS_USER (user), NULL);
   g_return_val_if_fail (G_IS_LIST_MODEL (sessions), NULL);
 
   UnityGreeterUserSetupPage *self =
     g_object_new (UNITY_GREETER_TYPE_USER_SETUP_PAGE, NULL);
   self->user     = g_object_ref (user);
   self->sessions = g_object_ref (sessions);
-  self->strength = unity_greeter_strength_new ();
 
-  apply_identity (self);
-  apply_wallpaper (self);
+  unity_greeter_apply_identity (self->avatar, self->name_label, self->user);
+  unity_greeter_apply_wallpaper (self->wallpaper, self->user, "background.png");
   validate (self);
 
   return ADW_NAVIGATION_PAGE (self);

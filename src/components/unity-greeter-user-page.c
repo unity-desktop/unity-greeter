@@ -23,9 +23,9 @@
 #include <glib/gi18n.h>
 
 #include "unity-greeter-conversation.h"
-#include "unity-greeter-defs.h"
 #include "unity-greeter-session-dialog.h"
 #include "unity-greeter-session-list.h"
+#include "unity-greeter-visuals.h"
 
 struct _UnityGreeterUserPage
 {
@@ -42,7 +42,7 @@ struct _UnityGreeterUserPage
   GtkButton           *session_button;
   GtkButton           *back;
 
-  UnityGreeterUser         *user;
+  ActUser                  *user;
   GListModel               *sessions;
   UnityGreeterConversation *conversation;
 
@@ -53,20 +53,6 @@ struct _UnityGreeterUserPage
 
 G_DEFINE_FINAL_TYPE (UnityGreeterUserPage, unity_greeter_user_page,
                      ADW_TYPE_NAVIGATION_PAGE)
-
-static void
-show_message (UnityGreeterUserPage *self,
-              const gchar          *text,
-              gboolean              is_error)
-{
-  gtk_label_set_text (self->message, text != NULL ? text : "");
-  gtk_widget_set_visible (GTK_WIDGET (self->message),
-                          text != NULL && *text != '\0');
-  gtk_widget_remove_css_class (GTK_WIDGET (self->message), "error");
-  gtk_widget_remove_css_class (GTK_WIDGET (self->message), "dim-label");
-  gtk_widget_add_css_class    (GTK_WIDGET (self->message),
-                               is_error ? "error" : "dim-label");
-}
 
 static void
 set_busy (UnityGreeterUserPage *self, gboolean busy)
@@ -107,7 +93,6 @@ sync_caps_warning (UnityGreeterUserPage *self)
 static void
 on_caps_lock_changed (GObject *o, GParamSpec *p, gpointer u)
 {
-  (void) o; (void) p;
   sync_caps_warning (UNITY_GREETER_USER_PAGE (u));
 }
 
@@ -129,13 +114,12 @@ submit (UnityGreeterUserPage *self)
   g_set_str (&self->pending, text);
   self->started = TRUE;
   unity_greeter_conversation_begin (self->conversation,
-    unity_greeter_user_get_user_name (self->user));
+    act_user_get_user_name (self->user));
 }
 
 static void
 on_submit (GtkWidget *source, UnityGreeterUserPage *self)
 {
-  (void) source;
   submit (self);
 }
 
@@ -144,7 +128,6 @@ on_session_picked (UnityGreeterSessionDialog *dialog,
                    const gchar               *id,
                    gpointer                   user_data)
 {
-  (void) dialog;
   UnityGreeterUserPage *self = user_data;
   g_set_str (&self->selected_session, id);
 }
@@ -152,7 +135,6 @@ on_session_picked (UnityGreeterSessionDialog *dialog,
 static void
 on_pick_session (GtkButton *button, UnityGreeterUserPage *self)
 {
-  (void) button;
   AdwDialog *dialog =
     unity_greeter_session_dialog_new (self->sessions, self->selected_session);
   g_signal_connect_object (dialog, "session-selected",
@@ -166,9 +148,6 @@ on_prompt (UnityGreeterConversation *conv,
            gboolean                  secret,
            gpointer                  user_data)
 {
-  (void) conv;
-  (void) label;
-  (void) secret;
   UnityGreeterUserPage *self = user_data;
 
   if (self->pending != NULL)
@@ -191,17 +170,15 @@ on_message (UnityGreeterConversation *conv,
             gboolean                  is_error,
             gpointer                  user_data)
 {
-  (void) conv;
-  show_message (UNITY_GREETER_USER_PAGE (user_data), text, is_error);
+  unity_greeter_set_status_text (UNITY_GREETER_USER_PAGE (user_data)->message, text, is_error);
 }
 
 static void
 on_authenticated (UnityGreeterConversation *conv, gpointer user_data)
 {
-  (void) conv;
   UnityGreeterUserPage *self = user_data;
 
-  show_message (self, NULL, FALSE);
+  unity_greeter_set_status_text (self->message, NULL, FALSE);
   set_busy (self, TRUE);
 
   if (self->selected_session != NULL)
@@ -210,7 +187,7 @@ on_authenticated (UnityGreeterConversation *conv, gpointer user_data)
   g_autoptr (UnityGreeterSession) session = resolve_session (self);
   if (session == NULL)
     {
-      show_message (self, _("No sessions installed"), TRUE);
+      unity_greeter_set_status_text (self->message, _("No sessions installed"), TRUE);
       set_busy (self, FALSE);
       return;
     }
@@ -220,7 +197,7 @@ on_authenticated (UnityGreeterConversation *conv, gpointer user_data)
   if (argv == NULL)
     {
       g_warning ("session command malformed: %s", error->message);
-      show_message (self, _("Session command is malformed"), TRUE);
+      unity_greeter_set_status_text (self->message, _("Session command is malformed"), TRUE);
       set_busy (self, FALSE);
       return;
     }
@@ -232,10 +209,9 @@ on_authenticated (UnityGreeterConversation *conv, gpointer user_data)
 static void
 on_failed (UnityGreeterConversation *conv, GError *error, gpointer user_data)
 {
-  (void) conv;
   UnityGreeterUserPage *self = user_data;
 
-  show_message (self,
+  unity_greeter_set_status_text (self->message,
     error->code == UNITY_GREETER_ERROR_AUTH ? _("Incorrect password")
                                             : _("Login failed"),
     TRUE);
@@ -247,47 +223,15 @@ on_failed (UnityGreeterConversation *conv, GError *error, gpointer user_data)
 static void
 on_page_hidden (AdwNavigationPage *page, gpointer user_data)
 {
-  (void) user_data;
   unity_greeter_conversation_cancel (UNITY_GREETER_USER_PAGE (page)->conversation);
 }
 
 static void
 on_page_shown (AdwNavigationPage *page, gpointer user_data)
 {
-  (void) user_data;
   UnityGreeterUserPage *self = UNITY_GREETER_USER_PAGE (page);
   if (g_strcmp0 (adw_view_stack_get_visible_child_name (self->stack), "form") == 0)
     gtk_widget_grab_focus (GTK_WIDGET (self->entry));
-}
-
-static void
-apply_identity (UnityGreeterUserPage *self)
-{
-  const gchar *display = unity_greeter_user_get_display_name (self->user);
-  adw_avatar_set_text (self->avatar, display);
-  gtk_label_set_text  (self->name_label, display != NULL ? display : "");
-
-  const gchar *icon = unity_greeter_user_get_icon_file (self->user);
-  if (icon == NULL || *icon == '\0')
-    return;
-
-  g_autoptr (GdkTexture) tex = gdk_texture_new_from_filename (icon, NULL);
-  if (tex != NULL)
-    adw_avatar_set_custom_image (self->avatar, GDK_PAINTABLE (tex));
-}
-
-static void
-apply_wallpaper (UnityGreeterUserPage *self)
-{
-  const gchar *user_name = unity_greeter_user_get_user_name (self->user);
-  if (user_name == NULL || *user_name == '\0')
-    return;
-
-  g_autofree gchar *bg =
-    g_build_filename (UNITY_GREETER_MIRROR_ROOT, user_name, "background.png", NULL);
-  g_autoptr (GdkTexture) tex = gdk_texture_new_from_filename (bg, NULL);
-  if (tex != NULL)
-    gtk_picture_set_paintable (self->wallpaper, GDK_PAINTABLE (tex));
 }
 
 static void
@@ -296,7 +240,7 @@ apply_session_defaults (UnityGreeterUserPage *self)
   gtk_widget_set_visible (GTK_WIDGET (self->session_button),
                           g_list_model_get_n_items (self->sessions) > 1);
 
-  const gchar *last = unity_greeter_user_get_session (self->user);
+  const gchar *last = act_user_get_session (self->user);
   if (last != NULL && *last != '\0' &&
       unity_greeter_session_list_find (self->sessions, last) != NULL)
     {
@@ -317,7 +261,7 @@ maybe_auto_begin (UnityGreeterUserPage *self)
   /* Auto-begin for accounts marked passwordless in AccountsService. PAM
      accepts them under nullok and no prompt appears; if it does prompt,
      the visitor types into the entry as usual. */
-  if (unity_greeter_user_get_password_mode (self->user) !=
+  if (act_user_get_password_mode (self->user) !=
       ACT_USER_PASSWORD_MODE_NONE)
     return;
   if (self->started)
@@ -326,7 +270,7 @@ maybe_auto_begin (UnityGreeterUserPage *self)
   set_busy (self, TRUE);
   self->started = TRUE;
   unity_greeter_conversation_begin (self->conversation,
-    unity_greeter_user_get_user_name (self->user));
+    act_user_get_user_name (self->user));
 }
 
 static void
@@ -385,17 +329,17 @@ unity_greeter_user_page_init (UnityGreeterUserPage *self)
 }
 
 AdwNavigationPage *
-unity_greeter_user_page_new (UnityGreeterUser *user, GListModel *sessions)
+unity_greeter_user_page_new (ActUser *user, GListModel *sessions)
 {
-  g_return_val_if_fail (UNITY_GREETER_IS_USER (user), NULL);
+  g_return_val_if_fail (ACT_IS_USER (user), NULL);
   g_return_val_if_fail (G_IS_LIST_MODEL (sessions), NULL);
 
   UnityGreeterUserPage *self = g_object_new (UNITY_GREETER_TYPE_USER_PAGE, NULL);
   self->user     = g_object_ref (user);
   self->sessions = g_object_ref (sessions);
 
-  apply_identity (self);
-  apply_wallpaper (self);
+  unity_greeter_apply_identity (self->avatar, self->name_label, self->user);
+  unity_greeter_apply_wallpaper (self->wallpaper, self->user, "background.png");
   apply_session_defaults (self);
   sync_caps_warning (self);
 

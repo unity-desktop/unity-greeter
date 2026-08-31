@@ -1,4 +1,4 @@
-/* unity-greeter-user-setup-page.h
+/* unity-greeter-visuals.h
  *
  * Copyright 2026 Muqtadir
  *
@@ -26,15 +26,16 @@
 
 G_BEGIN_DECLS
 
-#define UNITY_GREETER_TYPE_USER_SETUP_PAGE (unity_greeter_user_setup_page_get_type ())
+void unity_greeter_apply_identity  (AdwAvatar        *avatar,
+                                    GtkLabel         *name_label,
+                                    ActUser *user);
 
-/* Page shown when an account still needs a first password. Asks for one,
-   checks the strength, hands the result to AccountsService, then moves on
-   to the login page. */
-G_DECLARE_FINAL_TYPE (UnityGreeterUserSetupPage, unity_greeter_user_setup_page,
-                      UNITY_GREETER, USER_SETUP_PAGE, AdwNavigationPage)
+void unity_greeter_apply_wallpaper (GtkPicture       *picture,
+                                    ActUser *user,
+                                    const gchar      *basename);
 
-AdwNavigationPage *unity_greeter_user_setup_page_new (ActUser    *user,
-                                                      GListModel *sessions);
+void unity_greeter_set_status_text (GtkLabel         *label,
+                                    const gchar      *text,
+                                    gboolean          is_error);
 
 G_END_DECLS

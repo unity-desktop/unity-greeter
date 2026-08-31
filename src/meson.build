@@ -10,15 +10,10 @@ unity_greeter_deps = [
   dep_astalgreet,
   dep_astallogind,
   dep_astalwl,
+  dep_astalidle,
   dep_astalwlr,
   dep_pwquality,
 ]
-
-configure_file(
-  input:         'unity-greeter-defs.h.in',
-  output:        'unity-greeter-defs.h',
-  configuration: mirror_conf,
-)
 
 unity_greeter_sources = files(
   'main.c',
