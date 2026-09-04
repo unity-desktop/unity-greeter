@@ -20,7 +20,7 @@
 
 #include "unity-greeter-user.h"
 
-#define ACCOUNTS_SERVICE_BUS_NAME "org.freedesktop.Accounts"
+#include <libdex.h>
 
 const gchar *
 unity_greeter_user_display_name (ActUser *user)
@@ -31,14 +31,37 @@ unity_greeter_user_display_name (ActUser *user)
   return act_user_get_user_name (user);
 }
 
-static void
-on_set_session_done (GObject *source, GAsyncResult *result, gpointer user_data)
+static DexFuture *
+set_session_fiber (gpointer data)
 {
+  g_autoptr (GVariant) params = data;
+  const gchar *object_path;
+  const gchar *session_id;
+
+  g_variant_get (params, "(&s&s)", &object_path, &session_id);
+
   g_autoptr (GError) error = NULL;
-  g_autoptr (GVariant) reply =
-    g_dbus_connection_call_finish (G_DBUS_CONNECTION (source), result, &error);
+  g_autoptr (GDBusConnection) bus = dex_await_object (
+    dex_bus_get (G_BUS_TYPE_SYSTEM), &error);
+  if (bus == NULL)
+    {
+      g_warning ("SetSession: no system bus: %s", error->message);
+      return dex_future_new_true ();
+    }
+
+  g_autoptr (GVariant) reply = dex_await_variant (
+    dex_dbus_connection_call (bus,
+                              "org.freedesktop.Accounts",
+                              object_path,
+                              "org.freedesktop.Accounts.User",
+                              "SetSession",
+                              g_variant_new ("(s)", session_id),
+                              NULL, G_DBUS_CALL_FLAGS_NONE, -1),
+    &error);
   if (reply == NULL)
     g_warning ("SetSession: %s", error->message);
+
+  return dex_future_new_true ();
 }
 
 void
@@ -47,28 +70,15 @@ unity_greeter_user_persist_session (ActUser *user, const gchar *session_id)
   g_return_if_fail (ACT_IS_USER (user));
   g_return_if_fail (session_id != NULL);
 
-  const gchar *path = act_user_get_object_path (user);
-  if (path == NULL)
+  const gchar *object_path = act_user_get_object_path (user);
+  if (object_path == NULL)
     return;
 
-  g_autoptr (GError) error = NULL;
-  g_autoptr (GDBusConnection) bus =
-    g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
-  if (bus == NULL)
-    {
-      g_warning ("SetSession: no system bus: %s", error->message);
-      return;
-    }
+  GVariant *params = g_variant_ref_sink (
+    g_variant_new ("(ss)", object_path, session_id));
 
-  g_dbus_connection_call (bus,
-                          ACCOUNTS_SERVICE_BUS_NAME,
-                          path,
-                          "org.freedesktop.Accounts.User",
-                          "SetSession",
-                          g_variant_new ("(s)", session_id),
-                          NULL,
-                          G_DBUS_CALL_FLAGS_NONE,
-                          -1, NULL, on_set_session_done, NULL);
+  dex_future_disown (dex_scheduler_spawn (
+    NULL, 0, set_session_fiber, params, (GDestroyNotify) g_variant_unref));
 }
 
 void
