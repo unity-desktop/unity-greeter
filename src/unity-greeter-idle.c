@@ -21,33 +21,33 @@
 #include "unity-greeter-idle.h"
 
 #include <astal-idle-notify.h>
-#include <astal-logind.h>
 #include <astal-wl.h>
-#include <astal-wlr.h>
+#include <unity-quit.h>
+#include <unity-wlr-output-power.h>
 
 #define BLANK_TIMEOUT_MS   120000   /* 2 min idle powers outputs off */
 #define SUSPEND_TIMEOUT_MS 180000   /* 3 min idle asks logind to suspend */
 
 typedef struct
 {
-  AstalWlrOutputPowerManager  *power_manager;
+  UnityWlrOutputPowerManager  *power_manager;
   GPtrArray                   *power_controls;
-  AstalIdleNotifyNotification *blank;
-  AstalIdleNotifyNotification *suspend;
-} Idle;
+  AstalIdleNotifyNotification *blank_notification;
+  AstalIdleNotifyNotification *suspend_notification;
+} IdleWatch;
 
 static void
-power_outputs (Idle *idle, AstalWlrOutputPowerMode mode)
+power_outputs (IdleWatch *idle, UnityWlrOutputPowerMode mode)
 {
   if (idle->power_manager == NULL)
     return;
 
-  if (mode == ASTAL_WLR_OUTPUT_POWER_MODE_ON)
+  if (mode == UNITY_WLR_OUTPUT_POWER_MODE_ON)
     {
       for (guint i = 0; i < idle->power_controls->len; i++)
         {
-          AstalWlrOutputPower *p = g_ptr_array_index (idle->power_controls, i);
-          astal_wlr_output_power_request_mode (p, ASTAL_WLR_OUTPUT_POWER_MODE_ON);
+          UnityWlrOutputPower *power_control = g_ptr_array_index (idle->power_controls, i);
+          unity_wlr_output_power_request_mode (power_control, UNITY_WLR_OUTPUT_POWER_MODE_ON);
         }
       g_ptr_array_set_size (idle->power_controls, 0);
       return;
@@ -56,13 +56,13 @@ power_outputs (Idle *idle, AstalWlrOutputPowerMode mode)
   GList *outputs = astal_wl_registry_get_outputs (astal_wl_registry_get_default ());
   for (GList *l = outputs; l != NULL; l = l->next)
     {
-      AstalWlrOutputPower *p =
-        astal_wlr_output_power_manager_get_output_power (idle->power_manager,
+      UnityWlrOutputPower *power_control =
+        unity_wlr_output_power_manager_get_output_power (idle->power_manager,
                                                          ASTAL_WL_OUTPUT (l->data));
-      if (p == NULL)
+      if (power_control == NULL)
         continue;
-      astal_wlr_output_power_request_mode (p, ASTAL_WLR_OUTPUT_POWER_MODE_OFF);
-      g_ptr_array_add (idle->power_controls, p);
+      unity_wlr_output_power_request_mode (power_control, UNITY_WLR_OUTPUT_POWER_MODE_OFF);
+      g_ptr_array_add (idle->power_controls, power_control);
     }
   g_list_free (outputs);
 }
@@ -70,33 +70,33 @@ power_outputs (Idle *idle, AstalWlrOutputPowerMode mode)
 static void
 on_blank_idled (AstalIdleNotifyNotification *n, gpointer data)
 {
-  power_outputs (data, ASTAL_WLR_OUTPUT_POWER_MODE_OFF);
+  power_outputs (data, UNITY_WLR_OUTPUT_POWER_MODE_OFF);
 }
 
 static void
 on_blank_resumed (AstalIdleNotifyNotification *n, gpointer data)
 {
-  power_outputs (data, ASTAL_WLR_OUTPUT_POWER_MODE_ON);
+  power_outputs (data, UNITY_WLR_OUTPUT_POWER_MODE_ON);
 }
 
 static void
 on_suspend_idled (AstalIdleNotifyNotification *n, gpointer data)
 {
-  AstalLogindLogind *logind = astal_logind_get_default ();
-  if (logind == NULL)
+  UnityQuit *quit = unity_quit_get_default ();
+  if (quit == NULL)
     {
       g_warning ("idle: logind unavailable, skipping suspend");
       return;
     }
-  astal_logind_logind_suspend (logind);
+  unity_quit_suspend (quit);
 }
 
 void
 unity_greeter_idle_watch (void)
 {
-  /* Pre-warm astal-logind so can_suspend has settled by the time the
+  /* Pre-warm the logind wrapper so can_suspend has settled by the time the
      3-minute notification fires. */
-  astal_logind_get_default ();
+  unity_quit_get_default ();
 
   /* astal-idle-notify aborts on a compositor without the protocol, so
      ask before touching the notifier. */
@@ -119,28 +119,28 @@ unity_greeter_idle_watch (void)
 
   /* The watcher runs for the life of the process, so its state is static
      rather than heap-allocated and never freed. */
-  static Idle idle;
+  static IdleWatch idle;
 
-  idle.power_manager  = astal_wlr_output_power_manager_get_default ();
+  idle.power_manager  = unity_wlr_output_power_manager_get_default ();
   idle.power_controls = g_ptr_array_new_with_free_func (g_object_unref);
 
   AstalIdleNotifyNotifier *notifier = astal_idle_notify_get_default ();
 
   /* Each notification owns its wayland listener: dropping the object
      stops the signals, so both are kept. */
-  idle.blank =
+  idle.blank_notification =
     astal_idle_notify_notifier_get_idle_notification_for_seat (notifier,
                                                                BLANK_TIMEOUT_MS,
                                                                seat);
   if (idle.power_manager != NULL)
     {
-      g_signal_connect (idle.blank, "idled",   G_CALLBACK (on_blank_idled),   &idle);
-      g_signal_connect (idle.blank, "resumed", G_CALLBACK (on_blank_resumed), &idle);
+      g_signal_connect (idle.blank_notification, "idled",   G_CALLBACK (on_blank_idled),   &idle);
+      g_signal_connect (idle.blank_notification, "resumed", G_CALLBACK (on_blank_resumed), &idle);
     }
 
-  idle.suspend =
+  idle.suspend_notification =
     astal_idle_notify_notifier_get_idle_notification_for_seat (notifier,
                                                                SUSPEND_TIMEOUT_MS,
                                                                seat);
-  g_signal_connect (idle.suspend, "idled", G_CALLBACK (on_suspend_idled), &idle);
+  g_signal_connect (idle.suspend_notification, "idled", G_CALLBACK (on_suspend_idled), &idle);
 }

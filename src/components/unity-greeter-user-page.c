@@ -34,7 +34,7 @@ struct _UnityGreeterUserPage
   GtkPicture          *wallpaper;
   AdwAvatar           *avatar;
   GtkLabel            *name_label;
-  GtkLabel            *message;
+  GtkLabel            *message_label;
   AdwPasswordEntryRow *entry;
   GtkLabel            *caps_warning;
   AdwButtonRow        *submit_button;
@@ -47,7 +47,7 @@ struct _UnityGreeterUserPage
   UnityGreeterConversation *conversation;
 
   gchar    *selected_session;
-  gchar    *pending;
+  gchar    *pending_password;
   gboolean  started;
 };
 
@@ -70,10 +70,10 @@ resolve_session (UnityGreeterUserPage *self)
 {
   if (self->selected_session != NULL)
     {
-      UnityGreeterSession *s =
+      UnityGreeterSession *session =
         unity_greeter_session_list_find (self->sessions, self->selected_session);
-      if (s != NULL)
-        return g_object_ref (s);
+      if (session != NULL)
+        return g_object_ref (session);
     }
   if (g_list_model_get_n_items (self->sessions) > 0)
     return UNITY_GREETER_SESSION (g_list_model_get_item (self->sessions, 0));
@@ -111,7 +111,7 @@ submit (UnityGreeterUserPage *self)
       return;
     }
 
-  g_set_str (&self->pending, text);
+  g_set_str (&self->pending_password, text);
   self->started = TRUE;
   unity_greeter_conversation_begin (self->conversation,
     act_user_get_user_name (self->user));
@@ -150,9 +150,9 @@ on_prompt (UnityGreeterConversation *conv,
 {
   UnityGreeterUserPage *self = user_data;
 
-  if (self->pending != NULL)
+  if (self->pending_password != NULL)
     {
-      g_autofree gchar *staged = g_steal_pointer (&self->pending);
+      g_autofree gchar *staged = g_steal_pointer (&self->pending_password);
       unity_greeter_conversation_answer (self->conversation, staged);
       return;
     }
@@ -170,7 +170,7 @@ on_message (UnityGreeterConversation *conv,
             gboolean                  is_error,
             gpointer                  user_data)
 {
-  unity_greeter_set_status_text (UNITY_GREETER_USER_PAGE (user_data)->message, text, is_error);
+  unity_greeter_set_status_text (UNITY_GREETER_USER_PAGE (user_data)->message_label, text, is_error);
 }
 
 static void
@@ -178,7 +178,7 @@ on_authenticated (UnityGreeterConversation *conv, gpointer user_data)
 {
   UnityGreeterUserPage *self = user_data;
 
-  unity_greeter_clear_status (self->message);
+  unity_greeter_clear_status (self->message_label);
   set_busy (self, TRUE);
 
   if (self->selected_session != NULL)
@@ -187,7 +187,7 @@ on_authenticated (UnityGreeterConversation *conv, gpointer user_data)
   g_autoptr (UnityGreeterSession) session = resolve_session (self);
   if (session == NULL)
     {
-      unity_greeter_set_status_text (self->message, _("No sessions installed"), TRUE);
+      unity_greeter_set_status_text (self->message_label, _("No sessions installed"), TRUE);
       set_busy (self, FALSE);
       return;
     }
@@ -197,7 +197,7 @@ on_authenticated (UnityGreeterConversation *conv, gpointer user_data)
   if (argv == NULL)
     {
       g_warning ("session command malformed: %s", error->message);
-      unity_greeter_set_status_text (self->message, _("Session command is malformed"), TRUE);
+      unity_greeter_set_status_text (self->message_label, _("Session command is malformed"), TRUE);
       set_busy (self, FALSE);
       return;
     }
@@ -211,13 +211,13 @@ on_failed (UnityGreeterConversation *conv, GError *error, gpointer user_data)
 {
   UnityGreeterUserPage *self = user_data;
 
-  unity_greeter_set_status_text (self->message,
+  unity_greeter_set_status_text (self->message_label,
     error->code == UNITY_GREETER_ERROR_AUTH ? _("Incorrect password")
                                             : _("Login failed"),
     TRUE);
   set_busy (self, FALSE);
   self->started = FALSE;
-  g_clear_pointer (&self->pending, g_free);
+  g_clear_pointer (&self->pending_password, g_free);
 }
 
 static void
@@ -297,7 +297,7 @@ unity_greeter_user_page_finalize (GObject *object)
 {
   UnityGreeterUserPage *self = UNITY_GREETER_USER_PAGE (object);
   g_clear_pointer (&self->selected_session, g_free);
-  g_clear_pointer (&self->pending, g_free);
+  g_clear_pointer (&self->pending_password, g_free);
   G_OBJECT_CLASS (unity_greeter_user_page_parent_class)->finalize (object);
 }
 
@@ -316,7 +316,7 @@ unity_greeter_user_page_class_init (UnityGreeterUserPageClass *klass)
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, wallpaper);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, avatar);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, name_label);
-  gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, message);
+  gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, message_label);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, entry);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, caps_warning);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, submit_button);

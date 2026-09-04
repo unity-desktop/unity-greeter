@@ -8,10 +8,10 @@ unity_greeter_deps = [
   dep_json,
   dep_act,
   dep_astalgreet,
-  dep_astallogind,
+  dep_unity_platform_quit,
   dep_astalwl,
   dep_astalidle,
-  dep_astalwlr,
+  dep_unity_platform_wlr,
   dep_pwquality,
 ]
 

@@ -24,11 +24,16 @@ install the deps:
 
 - `gtk4` (>= 4.22)
 - `libadwaita-1` (>= 1.9)
-- `gio-2.0`, `gio-unix-2.0`, `glib-2.0` (>= 2.76)
-- `graphene-1.0`, `json-glib-1.0`
+- `gio-2.0`, `gio-unix-2.0`, `glib-2.0` (>= 2.80)
+- `graphene-1.0`,
+- `json-glib-1.0`
 - `accountsservice` (>= 23.13.9)
-- `astal-greet-0.1`, `astal-logind-0.1`, `astal-wl-0.1`, `astal-wlr-0.1`
-- `meson`, `ninja`
+- `astal-greet-0.1`,
+- `astal-wl-0.1`,
+- `unity-platform-quit`,
+- `unity-platform-wlr`
+- `meson`,
+- `ninja`
 
 ```sh
 meson setup build
