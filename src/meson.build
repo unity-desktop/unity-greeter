@@ -8,6 +8,7 @@ unity_greeter_deps = [
   dep_json,
   dep_act,
   dep_astalgreet,
+  dep_libdex,
   dep_unity_platform_quit,
   dep_astalwl,
   dep_astalidle,
