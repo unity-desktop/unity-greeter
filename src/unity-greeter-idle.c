@@ -58,6 +58,9 @@ blank_outputs (void)
 static void
 unblank_outputs (void)
 {
+  for (guint i = 0; i < blanked_controls->len; i++)
+    unity_wlr_output_power_request_mode (g_ptr_array_index (blanked_controls, i),
+                                         UNITY_WLR_OUTPUT_POWER_MODE_ON);
   g_ptr_array_set_size (blanked_controls, 0);
 }
 
@@ -87,6 +90,13 @@ on_suspend_idled (AstalIdleNotifyNotification *n, gpointer data)
 {
   DexFuture *future = unity_quit_suspend (unity_quit_get_default ());
   dex_future_disown (dex_future_finally (future, on_suspend_replied, NULL, NULL));
+}
+
+static void
+on_prepare_for_sleep (UnityQuit *quit, gboolean start, gpointer data)
+{
+  if (!start)
+    unblank_outputs ();
 }
 
 void
@@ -124,4 +134,7 @@ unity_greeter_idle_watch (void)
   suspend_notification = astal_idle_notify_notifier_get_idle_notification_for_seat (
     notifier, SUSPEND_TIMEOUT_MS, seat);
   g_signal_connect (suspend_notification, "idled", G_CALLBACK (on_suspend_idled), NULL);
+
+  g_signal_connect (unity_quit_get_default (), "prepare-for-sleep",
+                    G_CALLBACK (on_prepare_for_sleep), NULL);
 }
