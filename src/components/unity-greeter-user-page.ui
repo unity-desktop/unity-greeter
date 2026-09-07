@@ -107,6 +107,7 @@
                                         <signal name="entry-activated" handler="on_submit" swapped="no"/>
                                         <child>
                                           <object class="GtkButton" id="session_button">
+                                            <property name="visible">false</property>
                                             <property name="icon-name">emblem-system-symbolic</property>
                                             <property name="tooltip-text" translatable="yes">Session</property>
                                             <property name="valign">center</property>
