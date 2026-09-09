@@ -39,3 +39,8 @@ install_data(
   'greetd/10-unity-greeter.rules',
   install_dir: get_option('datadir') / 'polkit-1' / 'rules.d',
 )
+
+install_data(
+  'greetd/wayfire.ini',
+  install_dir: get_option('sysconfdir') / 'unity-greeter',
+)
