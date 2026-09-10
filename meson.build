@@ -23,7 +23,7 @@ dep_libdex              = dependency('libdex-1')
 dep_unity_platform_quit = dependency('unity-platform-quit')
 dep_astalwl             = dependency('astal-wl-0.1')
 dep_astalidle           = dependency('astal-idle-notify-0.1')
-dep_unity_platform_wlr  = dependency('unity-platform-wlr')
+dep_unity_platform_components = dependency('unity-platform-components')
 dep_pwquality   = dependency('pwquality')
 
 gnome = import('gnome')

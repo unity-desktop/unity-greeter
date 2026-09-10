@@ -12,14 +12,16 @@ unity_greeter_deps = [
   dep_unity_platform_quit,
   dep_astalwl,
   dep_astalidle,
-  dep_unity_platform_wlr,
+  dep_unity_platform_components,
   dep_pwquality,
 ]
 
 unity_greeter_sources = files(
   'main.c',
   'unity-greeter.c',
+  'unity-greeter-appearance.c',
   'unity-greeter-idle.c',
+  'unity-greeter-scale.c',
 )
 
 subdir('auth')
@@ -38,12 +40,18 @@ executable(
   unity_greeter_resources,
   dependencies:        unity_greeter_deps,
   include_directories: include_directories('.', 'auth', 'session', 'components'),
+  link_args:           [
+    '-Wl,--no-as-needed',
+    '-lgtk4-layer-shell',
+    '-Wl,--as-needed',
+  ],
   install:             true,
 )
 
 executable(
   'unity-greeter-session',
   'unity-greeter-session.c',
+  'unity-greeter-scale.c',
   dependencies: [dep_glib, dep_gio],
   install:      true,
 )
