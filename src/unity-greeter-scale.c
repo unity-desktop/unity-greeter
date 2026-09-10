@@ -14,6 +14,7 @@
 #define GREETER_BASE_CONFIG "/etc/unity-greeter/wayfire.ini"
 #define OUTPUT_GROUP_PREFIX "output:"
 #define SCALE_MAX           4.0
+#define OUTPUTS_BASENAME    "outputs.ini"
 
 static gboolean
 connector_is_sane (const gchar *connector)
@@ -69,7 +70,7 @@ newest_outputs_ini (void)
   while ((name = g_dir_read_name (dir)) != NULL)
     {
       g_autofree gchar *ini =
-        g_build_filename (UNITY_GREETER_MIRROR_ROOT, name, "outputs.ini", NULL);
+        g_build_filename (UNITY_GREETER_MIRROR_ROOT, name, OUTPUTS_BASENAME, NULL);
       GStatBuf st;
       if (g_stat (ini, &st) != 0)
         continue;
@@ -81,6 +82,29 @@ newest_outputs_ini (void)
         }
     }
   return best;
+}
+
+gboolean
+unity_greeter_scale_other_user_published (void)
+{
+  g_autoptr (GDir) dir = g_dir_open (UNITY_GREETER_MIRROR_ROOT, 0, NULL);
+  if (dir == NULL)
+    return FALSE;
+
+  const gchar *me = g_get_user_name ();
+  const gchar *name;
+
+  while ((name = g_dir_read_name (dir)) != NULL)
+    {
+      if (g_strcmp0 (name, me) == 0)
+        continue;
+
+      g_autofree gchar *path =
+        g_build_filename (UNITY_GREETER_MIRROR_ROOT, name, OUTPUTS_BASENAME, NULL);
+      if (g_file_test (path, G_FILE_TEST_EXISTS))
+        return TRUE;
+    }
+  return FALSE;
 }
 
 gchar *

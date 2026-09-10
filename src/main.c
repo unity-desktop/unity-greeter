@@ -23,31 +23,10 @@
 static GListModel *users_model;
 static GListModel *sessions_model;
 
-static gboolean
-user_outputs_ini_exists (void)
-{
-  g_autoptr (GDir) dir = g_dir_open (UNITY_GREETER_MIRROR_ROOT, 0, NULL);
-  if (dir == NULL)
-    return FALSE;
-
-  const gchar *me = g_get_user_name ();
-  const gchar *name;
-  while ((name = g_dir_read_name (dir)) != NULL)
-    {
-      if (g_strcmp0 (name, me) == 0)
-        continue;
-      g_autofree gchar *path =
-        g_build_filename (UNITY_GREETER_MIRROR_ROOT, name, "outputs.ini", NULL);
-      if (g_file_test (path, G_FILE_TEST_EXISTS))
-        return TRUE;
-    }
-  return FALSE;
-}
-
 static void
 push_optimal_outputs (GdkDisplay *display)
 {
-  if (user_outputs_ini_exists ())
+  if (unity_greeter_scale_other_user_published ())
     return;
 
   GListModel *monitors = display != NULL
@@ -57,8 +36,7 @@ push_optimal_outputs (GdkDisplay *display)
     return;
 
   g_autoptr (GString) out = g_string_new (
-    "# Auto-computed by unity-greeter on start via unity_window_compute_optimal_scale.\n"
-    "# Superseded by a real user's outputs.ini once unity-shell writes one.\n");
+    "# Auto-computed by unity-greeter replaced once unity-shell writes one.\n");
 
   gboolean wrote_any = FALSE;
   for (guint i = 0; i < n; i++)
