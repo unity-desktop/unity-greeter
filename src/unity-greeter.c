@@ -2,34 +2,20 @@
  *
  * Copyright 2026 Muqtadir
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include "unity-greeter.h"
 
-#include <glib/gi18n.h>
+#include <adwaita.h>
 
-#include "unity-greeter-idle.h"
 #include "unity-greeter-user-card.h"
 #include "unity-greeter-user-page.h"
 #include "unity-greeter-user-setup-page.h"
 
 struct _UnityGreeter
 {
-  AdwApplicationWindow parent_instance;
+  UnityWindow parent_instance;
 
   AdwNavigationView *nav;
   AdwWrapBox        *cards;
@@ -38,7 +24,7 @@ struct _UnityGreeter
   GListModel *sessions;
 };
 
-G_DEFINE_FINAL_TYPE (UnityGreeter, unity_greeter, ADW_TYPE_APPLICATION_WINDOW)
+G_DEFINE_FINAL_TYPE (UnityGreeter, unity_greeter, UNITY_TYPE_WINDOW)
 
 static void
 on_card_activated (UnityGreeterUserCard *card, gpointer user_data)
@@ -105,7 +91,7 @@ unity_greeter_class_init (UnityGreeterClass *klass)
   object_class->dispose = unity_greeter_dispose;
 
   gtk_widget_class_set_template_from_resource (
-    widget_class, "/org/unity/Greeter/unity-greeter.ui");
+    widget_class, "/org/unity/greeter/unity-greeter.ui");
   gtk_widget_class_bind_template_child (widget_class, UnityGreeter, nav);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeter, cards);
 }
@@ -134,8 +120,6 @@ unity_greeter_new (GtkApplication *app,
   g_signal_connect_object (self->users, "items-changed",
                            G_CALLBACK (on_users_changed), self, G_CONNECT_DEFAULT);
   sync_cards (self);
-
-  unity_greeter_idle_watch ();
 
   return self;
 }
