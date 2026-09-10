@@ -2,19 +2,6 @@
  *
  * Copyright 2026 Muqtadir
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -23,8 +10,8 @@
 #include <glib/gi18n.h>
 
 #include "unity-greeter-strength.h"
+#include "unity-greeter-user-helper.h"
 #include "unity-greeter-user-page.h"
-#include "unity-greeter-visuals.h"
 
 #define STRENGTH_ACCEPT_LEVEL 2
 
@@ -118,7 +105,7 @@ static void
 on_user_changed (ActUser *user, gpointer data)
 {
   UnityGreeterUserSetupPage *self = data;
-  unity_greeter_apply_identity  (self->avatar, self->name_label, user);
+  unity_greeter_apply_identity (self->avatar, self->name_label, user);
   unity_greeter_apply_wallpaper (self->wallpaper, user, "background.png");
 }
 
@@ -141,7 +128,7 @@ unity_greeter_user_setup_page_class_init (UnityGreeterUserSetupPageClass *klass)
   object_class->dispose = unity_greeter_user_setup_page_dispose;
 
   gtk_widget_class_set_template_from_resource (widget_class,
-    "/org/unity/Greeter/unity-greeter-user-setup-page.ui");
+    "/org/unity/greeter/unity-greeter-user-setup-page.ui");
 
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserSetupPage, wallpaper);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserSetupPage, avatar);

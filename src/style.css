@@ -7,3 +7,14 @@
 row.body .title {
   font-weight: normal;
 }
+
+statuspage > scrolledwindow > viewport > box > clamp > box > .title {
+  font-weight: 500;
+  font-size: 160%;
+}
+
+statuspage.compact > scrolledwindow > viewport > box {
+  margin-top: 0px;
+  margin-bottom: 12px;
+  border-spacing: 12px;
+}

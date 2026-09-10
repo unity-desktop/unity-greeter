@@ -2,19 +2,6 @@
  *
  * Copyright 2026 Muqtadir
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -22,85 +9,89 @@
 
 #include <adwaita.h>
 #include <gio/gio.h>
-#include <glib.h>
 #include <glib/gi18n.h>
+#include <glib/gstdio.h>
+#include <unity-window.h>
 
+#include "unity-greeter-appearance.h"
+#include "unity-greeter-idle.h"
+#include "unity-greeter-scale.h"
 #include "unity-greeter-session-list.h"
 #include "unity-greeter-user.h"
 #include "unity-greeter.h"
 
-#define INTERFACE_SCHEMA "org.gnome.desktop.interface"
-
-typedef struct
-{
-  GListModel *users;
-  GListModel *sessions;
-} AppState;
+static GListModel *users_model;
+static GListModel *sessions_model;
 
 static void
-apply_string_key (GSettings   *settings,
-                  const gchar *gsettings_key,
-                  const gchar *gtk_property)
+push_optimal_outputs (GdkDisplay *display)
 {
-  g_autofree gchar *value = g_settings_get_string (settings, gsettings_key);
-  if (value == NULL || *value == '\0')
+  if (unity_greeter_scale_other_user_published ())
     return;
 
-  GtkSettings *gtk_settings = gtk_settings_get_default ();
-  if (gtk_settings != NULL)
-    g_object_set (gtk_settings, gtk_property, value, NULL);
-}
+  GListModel *monitors = display != NULL
+                           ? gdk_display_get_monitors (display) : NULL;
+  guint n = monitors != NULL ? g_list_model_get_n_items (monitors) : 0;
+  if (n == 0)
+    return;
 
-static void
-apply_appearance (void)
-{
-  GSettingsSchemaSource *source = g_settings_schema_source_get_default ();
-  g_autoptr (GSettingsSchema) schema =
-    source != NULL
-      ? g_settings_schema_source_lookup (source, INTERFACE_SCHEMA, TRUE)
-      : NULL;
+  g_autoptr (GString) out = g_string_new (
+    "# Auto-computed by unity-greeter replaced once unity-shell writes one.\n");
 
-  if (schema == NULL)
+  gboolean wrote_any = FALSE;
+  for (guint i = 0; i < n; i++)
     {
-      g_warning ("%s not installed, skipping appearance", INTERFACE_SCHEMA);
-      return;
+      g_autoptr (GdkMonitor) monitor = g_list_model_get_item (monitors, i);
+      const gchar *connector = gdk_monitor_get_connector (monitor);
+      if (connector == NULL)
+        continue;
+
+      gdouble scale = unity_window_compute_optimal_scale (monitor);
+      g_string_append_printf (out, "\n[output:%s]\nscale = %.6f\n",
+                              connector, scale);
+      wrote_any = TRUE;
     }
 
-  g_autoptr (GSettings) settings = g_settings_new_full (schema, NULL, NULL);
+  if (!wrote_any)
+    return;
 
-  apply_string_key (settings, "font-name",    "gtk-font-name");
-  apply_string_key (settings, "icon-theme",   "gtk-icon-theme-name");
-  apply_string_key (settings, "cursor-theme", "gtk-cursor-theme-name");
+  g_autofree gchar *dir = g_build_filename (UNITY_GREETER_MIRROR_ROOT,
+                                            g_get_user_name (), NULL);
+  g_mkdir_with_parents (dir, 0755);
+  g_autofree gchar *path = g_build_filename (dir, "outputs.ini", NULL);
+  if (!g_file_set_contents (path, out->str, -1, NULL))
+    return;
+  g_chmod (path, 0644);
 
-  gint cursor_size = g_settings_get_int (settings, "cursor-size");
-  if (cursor_size > 0)
-    g_object_set (gtk_settings_get_default (),
-                  "gtk-cursor-theme-size", cursor_size,
-                  NULL);
-
-  adw_style_manager_set_color_scheme (adw_style_manager_get_default (),
-                                      ADW_COLOR_SCHEME_FORCE_DARK);
+  g_autofree gchar *composed = unity_greeter_scale_compose ();
+  if (composed == NULL)
+    g_warning ("scale: recompose of wayfire.ini failed");
 }
 
 static void
 on_startup (GApplication *app, gpointer user_data)
 {
-  AppState *state = user_data;
+  unity_greeter_appearance_apply ();
 
-  apply_appearance ();
+  sessions_model = unity_greeter_session_list_new ();
+  users_model    = unity_greeter_users_new ();
 
-  state->sessions = unity_greeter_session_list_new ();
-  state->users    = unity_greeter_users_new ();
+  push_optimal_outputs (gdk_display_get_default ());
+  unity_greeter_idle_watch ();
+}
+
+static UnityWindow *
+greeter_factory (GdkMonitor *monitor, gpointer user_data)
+{
+  return UNITY_WINDOW (unity_greeter_new (GTK_APPLICATION (user_data),
+                                          users_model, sessions_model));
 }
 
 static void
 on_activate (GApplication *app, gpointer user_data)
 {
-  AppState *state = user_data;
-
-  UnityGreeter *window = unity_greeter_new (GTK_APPLICATION (app),
-                                            state->users, state->sessions);
-  gtk_window_present (GTK_WINDOW (window));
+  unity_window_present_for_each_monitor (GTK_APPLICATION (app),
+                                         greeter_factory, app, NULL);
 }
 
 gint
@@ -115,18 +106,10 @@ main (void)
 
   g_set_application_name (_("Unity Greeter"));
 
-  AppState state = { 0 };
+  g_autoptr (AdwApplication) app =
+    adw_application_new ("org.unity.greeter", G_APPLICATION_DEFAULT_FLAGS);
+  g_signal_connect_after (app, "startup",  G_CALLBACK (on_startup),  NULL);
+  g_signal_connect       (app, "activate", G_CALLBACK (on_activate), NULL);
 
-  g_autoptr (AdwApplication) app = g_object_new (ADW_TYPE_APPLICATION,
-    "application-id",     "org.unity.Greeter",
-    "resource-base-path", "/org/unity/Greeter",
-    NULL);
-  g_signal_connect (app, "startup",  G_CALLBACK (on_startup),  &state);
-  g_signal_connect (app, "activate", G_CALLBACK (on_activate), &state);
-
-  gint rc = g_application_run (G_APPLICATION (app), 0, NULL);
-
-  g_clear_object (&state.users);
-  g_clear_object (&state.sessions);
-  return rc;
+  return g_application_run (G_APPLICATION (app), 0, NULL);
 }

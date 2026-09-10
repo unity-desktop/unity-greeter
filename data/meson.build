@@ -24,18 +24,11 @@ install_data(
 )
 
 install_data(
-  'greetd/greetd.dconf-profile',
-  install_dir: get_option('sysconfdir') / 'dconf' / 'profile',
-  rename: 'greetd',
-)
-
-install_data(
-  'greetd/greeter-defaults.ini',
-  install_dir: get_option('sysconfdir') / 'dconf' / 'db' / 'greetd.d',
-  rename: '00-unity-greeter',
-)
-
-install_data(
   'greetd/10-unity-greeter.rules',
   install_dir: get_option('datadir') / 'polkit-1' / 'rules.d',
+)
+
+install_data(
+  'greetd/wayfire.ini',
+  install_dir: get_option('sysconfdir') / 'unity-greeter',
 )

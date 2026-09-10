@@ -1,4 +1,4 @@
-/* unity-greeter-idle.h
+/* unity-greeter-appearance.h
  *
  * Copyright 2026 Muqtadir
  *
@@ -11,7 +11,6 @@
 
 G_BEGIN_DECLS
 
-/* Asks logind to suspend after 3 minutes of seat inactivity. */
-void unity_greeter_idle_watch (void);
+void unity_greeter_appearance_apply (void);
 
 G_END_DECLS

@@ -1,6 +1,6 @@
 ## unity-greeter
 
-greeter for unity-desktop, that drives PAM authentication through `greetd` via `astal-greet`, and hands the session off to `phoc`.
+greeter for unity-desktop, that drives PAM authentication through `greetd` via `astal-greet`, and hands the session off to `wayfire`.
 
 ### screenshots
 
@@ -15,7 +15,7 @@ greeter for unity-desktop, that drives PAM authentication through `greetd` via `
 - **`UnityGreeterUser`**: account that can log in. Carries the display name, avatar and last chosen session.
 - **`UnityGreeterSession`**: desktop session the user can pick from.
 - **`UnityGreeterConversation`**: communicates to greetd by sending the typed password to PAM and reports back what PAM answers.
-- **`unity-greeter-idle`**: saves power while the login screen is unattended. Turns the outputs off after 2 minutes of no input. Asks logind to suspend the machine after 3 minutes.
+- **`unity-greeter-idle`**: saves power while the login screen is unattended. Asks logind to suspend the machine after 3 minutes.Wayfire turns the outputs off after 2 minutes of no input through its `[idle] dpms_timeout` key.
 - **Per-user wallpaper**: each user has their own login-screen picture. `unity-shell` writes it before logout. The greeter reads it back on the next login.
 
 ### build
@@ -31,7 +31,6 @@ install the deps:
 - `astal-greet-0.1`,
 - `astal-wl-0.1`,
 - `unity-platform-quit`,
-- `unity-platform-wlr`
 - `meson`,
 - `ninja`
 

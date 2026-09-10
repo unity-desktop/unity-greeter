@@ -2,29 +2,19 @@
  *
  * Copyright 2026 Muqtadir
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include "unity-greeter-session-dialog.h"
 
+#include <adwaita.h>
+#include <astal-4.h>
+
 #include "unity-greeter-session-list.h"
 
 struct _UnityGreeterSessionDialog
 {
-  AdwDialog parent_instance;
+  UnityDialogPopup parent_instance;
 
   AdwPreferencesGroup *sessions_group;
 };
@@ -36,7 +26,7 @@ enum {
 
 static guint signals[N_SIGNALS];
 
-G_DEFINE_FINAL_TYPE (UnityGreeterSessionDialog, unity_greeter_session_dialog, ADW_TYPE_DIALOG)
+G_DEFINE_FINAL_TYPE (UnityGreeterSessionDialog, unity_greeter_session_dialog, UNITY_TYPE_DIALOG_POPUP)
 
 static void
 on_check_toggled (GtkCheckButton *check, gpointer user_data)
@@ -112,7 +102,7 @@ unity_greeter_session_dialog_class_init (UnityGreeterSessionDialogClass *klass)
   object_class->dispose = unity_greeter_session_dialog_dispose;
 
   gtk_widget_class_set_template_from_resource (
-    widget_class, "/org/unity/Greeter/unity-greeter-session-dialog.ui");
+    widget_class, "/org/unity/greeter/unity-greeter-session-dialog.ui");
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterSessionDialog, sessions_group);
 
   signals[SIGNAL_SESSION_SELECTED] = g_signal_new (
@@ -126,14 +116,25 @@ unity_greeter_session_dialog_init (UnityGreeterSessionDialog *self)
   gtk_widget_init_template (GTK_WIDGET (self));
 }
 
-AdwDialog *
-unity_greeter_session_dialog_new (GListModel *sessions,
-                                  const gchar *selected_id)
+UnityDialogPopup *
+unity_greeter_session_dialog_new (GListModel  *sessions,
+                                  const gchar *selected_id,
+                                  GtkWindow   *parent)
 {
   g_return_val_if_fail (G_IS_LIST_MODEL (sessions), NULL);
 
   UnityGreeterSessionDialog *self =
     g_object_new (UNITY_GREETER_TYPE_SESSION_DIALOG, NULL);
   populate (self, sessions, selected_id);
-  return ADW_DIALOG (self);
+
+  if (parent != NULL)
+    {
+      gtk_window_set_application (GTK_WINDOW (self),
+                                  gtk_window_get_application (parent));
+      if (ASTAL_IS_WINDOW (parent))
+        astal_window_set_gdkmonitor (ASTAL_WINDOW (self),
+                                     astal_window_get_gdkmonitor (ASTAL_WINDOW (parent)));
+    }
+
+  return UNITY_DIALOG_POPUP (self);
 }
