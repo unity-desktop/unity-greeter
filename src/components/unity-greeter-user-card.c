@@ -2,25 +2,12 @@
  *
  * Copyright 2026 Muqtadir
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include "unity-greeter-user-card.h"
 
-#include "unity-greeter-visuals.h"
+#include "unity-greeter-user-helper.h"
 
 struct _UnityGreeterUserCard
 {
@@ -53,7 +40,7 @@ static void
 on_user_changed (ActUser *user, gpointer data)
 {
   UnityGreeterUserCard *self = data;
-  unity_greeter_apply_identity  (self->avatar, self->name_label, user);
+  unity_greeter_apply_identity (self->avatar, self->name_label, user);
   unity_greeter_apply_wallpaper (self->wallpaper, user, "card.png");
 }
 
@@ -81,7 +68,7 @@ unity_greeter_user_card_class_init (UnityGreeterUserCardClass *klass)
     0, NULL, NULL, NULL, G_TYPE_NONE, 0);
 
   gtk_widget_class_set_template_from_resource (
-    widget_class, "/org/unity/Greeter/unity-greeter-user-card.ui");
+    widget_class, "/org/unity/greeter/unity-greeter-user-card.ui");
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserCard, frame);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserCard, wallpaper);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserCard, avatar);

@@ -2,19 +2,6 @@
  *
  * Copyright 2026 Muqtadir
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -25,7 +12,7 @@
 #include "unity-greeter-conversation.h"
 #include "unity-greeter-session-dialog.h"
 #include "unity-greeter-session-list.h"
-#include "unity-greeter-visuals.h"
+#include "unity-greeter-user-helper.h"
 
 struct _UnityGreeterUserPage
 {
@@ -135,11 +122,13 @@ on_session_picked (UnityGreeterSessionDialog *dialog,
 static void
 on_pick_session (GtkButton *button, UnityGreeterUserPage *self)
 {
-  AdwDialog *dialog =
-    unity_greeter_session_dialog_new (self->sessions, self->selected_session);
+  GtkRoot          *root   = gtk_widget_get_root (GTK_WIDGET (self));
+  UnityDialogPopup *dialog = unity_greeter_session_dialog_new (
+    self->sessions, self->selected_session,
+    GTK_IS_WINDOW (root) ? GTK_WINDOW (root) : NULL);
   g_signal_connect_object (dialog, "session-selected",
                            G_CALLBACK (on_session_picked), self, G_CONNECT_DEFAULT);
-  adw_dialog_present (dialog, GTK_WIDGET (self));
+  gtk_window_present (GTK_WINDOW (dialog));
 }
 
 static void
@@ -178,7 +167,7 @@ on_authenticated (UnityGreeterConversation *conv, gpointer user_data)
 {
   UnityGreeterUserPage *self = user_data;
 
-  unity_greeter_clear_status (self->message_label);
+  unity_greeter_set_status_text (self->message_label, NULL, FALSE);
   set_busy (self, TRUE);
 
   if (self->selected_session != NULL)
@@ -238,7 +227,7 @@ static void
 on_user_changed (ActUser *user, gpointer data)
 {
   UnityGreeterUserPage *self = data;
-  unity_greeter_apply_identity  (self->avatar, self->name_label, user);
+  unity_greeter_apply_identity (self->avatar, self->name_label, user);
   unity_greeter_apply_wallpaper (self->wallpaper, user, "background.png");
 }
 
@@ -311,7 +300,7 @@ unity_greeter_user_page_class_init (UnityGreeterUserPageClass *klass)
   object_class->finalize = unity_greeter_user_page_finalize;
 
   gtk_widget_class_set_template_from_resource (widget_class,
-    "/org/unity/Greeter/unity-greeter-user-page.ui");
+    "/org/unity/greeter/unity-greeter-user-page.ui");
 
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, wallpaper);
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterUserPage, avatar);

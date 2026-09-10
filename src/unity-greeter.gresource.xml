@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/org/unity/Greeter">
+  <gresource prefix="/org/unity/greeter">
     <file compressed="true" preprocess="xml-stripblanks">unity-greeter.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unity-greeter-user-card.ui">components/unity-greeter-user-card.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unity-greeter-user-page.ui">components/unity-greeter-user-page.ui</file>
