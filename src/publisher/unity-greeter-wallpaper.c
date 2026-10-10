@@ -36,11 +36,16 @@ largest_monitor (gint *width, gint *height)
     {
       g_autoptr (GdkMonitor) monitor = g_list_model_get_item (monitors, i);
       GdkRectangle geometry;
+      gdouble      scale = gdk_monitor_get_scale (monitor);
       gdk_monitor_get_geometry (monitor, &geometry);
-      if (geometry.width * geometry.height > *width * *height)
+
+      gint w = (gint) (geometry.width * scale + 0.5);
+      gint h = (gint) (geometry.height * scale + 0.5);
+
+      if (w * h > *width * *height)
         {
-          *width  = geometry.width;
-          *height = geometry.height;
+          *width  = w;
+          *height = h;
         }
     }
 }
@@ -56,8 +61,8 @@ render_blurred (UnityGreeterWallpaper *self, gint width, gint height, gint radiu
   gtk_snapshot_pop (snapshot);
   g_autoptr (GskRenderNode) node = gtk_snapshot_free_to_node (snapshot);
 
-  g_autoptr (GdkPaintable) drawn = gdk_paintable_get_current_image (GDK_PAINTABLE (self->source));
-  if (gdk_paintable_get_intrinsic_width (drawn) < width + 2 * radius)
+  GdkTexture *drawn = unity_backgrounds_source_get_texture (self->source);
+  if (drawn == NULL || gdk_texture_get_width (drawn) < width + 2 * radius)
     return NULL;
 
   return gsk_renderer_render_texture (self->renderer, node,
@@ -98,7 +103,7 @@ on_saved (GObject *source, GAsyncResult *result, gpointer user_data)
 }
 
 static void
-on_source_invalidated (GdkPaintable *source, gpointer user_data)
+on_source_texture (UnityBackgroundsSource *source, GParamSpec *pspec, gpointer user_data)
 {
   unity_greeter_wallpaper_publish (user_data);
 }
@@ -129,8 +134,8 @@ unity_greeter_wallpaper_init (UnityGreeterWallpaper *self)
   gsk_renderer_realize_for_display (self->renderer, gdk_display_get_default (), NULL);
 
   self->source = unity_backgrounds_source_new ();
-  g_signal_connect_object (self->source, "invalidate-contents",
-                           G_CALLBACK (on_source_invalidated), self, G_CONNECT_DEFAULT);
+  g_signal_connect_object (self->source, "notify::texture",
+                           G_CALLBACK (on_source_texture), self, G_CONNECT_DEFAULT);
 }
 
 /**
