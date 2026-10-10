@@ -32,3 +32,22 @@ install_data(
   'greetd/wayfire.ini',
   install_dir: get_option('sysconfdir') / 'unity-greeter',
 )
+
+user_unit_dir = get_option('prefix') / get_option('datadir') / 'systemd' / 'user'
+
+publisher_conf = configuration_data()
+publisher_conf.set('bindir', get_option('prefix') / get_option('bindir'))
+
+configure_file(
+  input:         'systemd/unity-greeter-publisher.service.in',
+  output:        'unity-greeter-publisher.service',
+  configuration: publisher_conf,
+  install:       true,
+  install_dir:   user_unit_dir,
+)
+
+install_symlink(
+  'unity-greeter-publisher.service',
+  pointing_to: '..' / 'unity-greeter-publisher.service',
+  install_dir: user_unit_dir / 'graphical-session.target.wants',
+)

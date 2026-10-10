@@ -4,15 +4,13 @@ unity_greeter_deps = [
   dep_gio,
   dep_gio_unix,
   dep_glib,
-  dep_graphene,
-  dep_json,
   dep_act,
   dep_astalgreet,
   dep_libdex,
-  dep_unity_platform_quit,
   dep_astalwl,
   dep_astalidle,
   dep_unity_platform_components,
+  dep_unity_quit_dialog,
   dep_pwquality,
 ]
 
@@ -27,6 +25,7 @@ unity_greeter_sources = files(
 subdir('auth')
 subdir('session')
 subdir('components')
+subdir('publisher')
 
 unity_greeter_resources = gnome.compile_resources(
   'unity-greeter-resources',
@@ -39,7 +38,7 @@ executable(
   unity_greeter_sources,
   unity_greeter_resources,
   dependencies:        unity_greeter_deps,
-  include_directories: include_directories('.', 'auth', 'session', 'components'),
+  include_directories: include_directories('.', 'auth', 'session', 'components', 'publisher'),
   link_args:           [
     '-Wl,--no-as-needed',
     '-lgtk4-layer-shell',

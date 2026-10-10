@@ -1,0 +1,11 @@
+[Unit]
+Description=Publish the wallpaper and output scales for the login screen
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=@bindir@/unity-greeter-publisher
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target

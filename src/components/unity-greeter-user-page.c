@@ -122,13 +122,11 @@ on_session_picked (UnityGreeterSessionDialog *dialog,
 static void
 on_pick_session (GtkButton *button, UnityGreeterUserPage *self)
 {
-  GtkRoot          *root   = gtk_widget_get_root (GTK_WIDGET (self));
-  UnityDialogPopup *dialog = unity_greeter_session_dialog_new (
-    self->sessions, self->selected_session,
-    GTK_IS_WINDOW (root) ? GTK_WINDOW (root) : NULL);
+  UnityDialog *dialog = unity_greeter_session_dialog_new (self->sessions,
+                                                         self->selected_session);
   g_signal_connect_object (dialog, "session-selected",
                            G_CALLBACK (on_session_picked), self, G_CONNECT_DEFAULT);
-  gtk_window_present (GTK_WINDOW (dialog));
+  unity_dialog_present (dialog, GTK_WIDGET (self));
 }
 
 static void
@@ -228,7 +226,6 @@ on_user_changed (ActUser *user, gpointer data)
 {
   UnityGreeterUserPage *self = data;
   unity_greeter_apply_identity (self->avatar, self->name_label, user);
-  unity_greeter_apply_wallpaper (self->wallpaper, user, "background.png");
 }
 
 static void
@@ -336,7 +333,7 @@ unity_greeter_user_page_new (ActUser *user, GListModel *sessions)
   self->sessions = g_object_ref (sessions);
 
   unity_greeter_apply_identity (self->avatar, self->name_label, self->user);
-  unity_greeter_apply_wallpaper (self->wallpaper, self->user, "background.png");
+  unity_greeter_apply_wallpaper (self->wallpaper, self->user);
   g_signal_connect_object (self->user, "changed",
                            G_CALLBACK (on_user_changed), self, G_CONNECT_DEFAULT);
   apply_session_defaults (self);

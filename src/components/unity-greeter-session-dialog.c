@@ -8,13 +8,13 @@
 #include "unity-greeter-session-dialog.h"
 
 #include <adwaita.h>
-#include <astal-4.h>
+#include <unity-header-bar.h>
 
 #include "unity-greeter-session-list.h"
 
 struct _UnityGreeterSessionDialog
 {
-  UnityDialogPopup parent_instance;
+  UnityDialog parent_instance;
 
   AdwPreferencesGroup *sessions_group;
 };
@@ -26,7 +26,7 @@ enum {
 
 static guint signals[N_SIGNALS];
 
-G_DEFINE_FINAL_TYPE (UnityGreeterSessionDialog, unity_greeter_session_dialog, UNITY_TYPE_DIALOG_POPUP)
+G_DEFINE_FINAL_TYPE (UnityGreeterSessionDialog, unity_greeter_session_dialog, UNITY_TYPE_DIALOG)
 
 static void
 on_check_toggled (GtkCheckButton *check, gpointer user_data)
@@ -101,6 +101,8 @@ unity_greeter_session_dialog_class_init (UnityGreeterSessionDialogClass *klass)
 
   object_class->dispose = unity_greeter_session_dialog_dispose;
 
+  g_type_ensure (UNITY_TYPE_HEADER_BAR);
+
   gtk_widget_class_set_template_from_resource (
     widget_class, "/org/unity/greeter/unity-greeter-session-dialog.ui");
   gtk_widget_class_bind_template_child (widget_class, UnityGreeterSessionDialog, sessions_group);
@@ -116,10 +118,9 @@ unity_greeter_session_dialog_init (UnityGreeterSessionDialog *self)
   gtk_widget_init_template (GTK_WIDGET (self));
 }
 
-UnityDialogPopup *
+UnityDialog *
 unity_greeter_session_dialog_new (GListModel  *sessions,
-                                  const gchar *selected_id,
-                                  GtkWindow   *parent)
+                                  const gchar *selected_id)
 {
   g_return_val_if_fail (G_IS_LIST_MODEL (sessions), NULL);
 
@@ -127,14 +128,5 @@ unity_greeter_session_dialog_new (GListModel  *sessions,
     g_object_new (UNITY_GREETER_TYPE_SESSION_DIALOG, NULL);
   populate (self, sessions, selected_id);
 
-  if (parent != NULL)
-    {
-      gtk_window_set_application (GTK_WINDOW (self),
-                                  gtk_window_get_application (parent));
-      if (ASTAL_IS_WINDOW (parent))
-        astal_window_set_gdkmonitor (ASTAL_WINDOW (self),
-                                     astal_window_get_gdkmonitor (ASTAL_WINDOW (parent)));
-    }
-
-  return UNITY_DIALOG_POPUP (self);
+  return UNITY_DIALOG (self);
 }
