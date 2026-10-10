@@ -18,8 +18,7 @@ void unity_greeter_apply_identity  (AdwAvatar   *avatar,
                                     ActUser     *user);
 
 void unity_greeter_apply_wallpaper (GtkPicture  *picture,
-                                    ActUser     *user,
-                                    const gchar *basename);
+                                    ActUser     *user);
 
 void unity_greeter_set_status_text (GtkLabel    *label,
                                     const gchar *text,

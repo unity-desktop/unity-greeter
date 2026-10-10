@@ -25,6 +25,14 @@
               </object>
             </property>
             <child type="overlay">
+              <object class="GtkBox">
+                <property name="can-target">false</property>
+                <style>
+                  <class name="unity-greeter-background-dim"/>
+                </style>
+              </object>
+            </child>
+            <child type="overlay">
               <object class="GtkButton" id="back">
                 <property name="visible">false</property>
                 <property name="halign">start</property>

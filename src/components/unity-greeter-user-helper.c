@@ -7,6 +7,8 @@
 
 #include "unity-greeter-user-helper.h"
 
+#include "unity-greeter-publish.h"
+
 void
 unity_greeter_apply_identity (AdwAvatar *avatar,
                               GtkLabel  *name_label,
@@ -26,33 +28,12 @@ unity_greeter_apply_identity (AdwAvatar *avatar,
 }
 
 void
-unity_greeter_apply_wallpaper (GtkPicture  *picture,
-                               ActUser     *user,
-                               const gchar *basename)
+unity_greeter_apply_wallpaper (GtkPicture *picture,
+                               ActUser    *user)
 {
-  static GHashTable *cache;
-
-  const gchar *user_name = act_user_get_user_name (user);
-  if (user_name == NULL || *user_name == '\0')
-    return;
-
-  g_autofree gchar *path =
-    g_build_filename (UNITY_GREETER_MIRROR_ROOT, user_name, basename, NULL);
-
-  if (cache == NULL)
-    cache = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                   g_free, g_object_unref);
-
-  GdkTexture *texture = g_hash_table_lookup (cache, path);
-  if (texture == NULL && !g_hash_table_contains (cache, path))
-    {
-      texture = gdk_texture_new_from_filename (path, NULL);
-      if (texture != NULL)
-        g_hash_table_insert (cache, g_steal_pointer (&path), texture);
-    }
-
-  gtk_picture_set_paintable (picture,
-                             texture != NULL ? GDK_PAINTABLE (texture) : NULL);
+  g_autofree gchar *path = unity_greeter_publish_path (act_user_get_user_name (user),
+                                                       UNITY_GREETER_PUBLISH_WALLPAPER);
+  gtk_picture_set_filename (picture, path);
 }
 
 void

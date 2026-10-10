@@ -41,7 +41,6 @@ on_user_changed (ActUser *user, gpointer data)
 {
   UnityGreeterUserCard *self = data;
   unity_greeter_apply_identity (self->avatar, self->name_label, user);
-  unity_greeter_apply_wallpaper (self->wallpaper, user, "card.png");
 }
 
 static void
@@ -96,7 +95,7 @@ unity_greeter_user_card_new (ActUser *user)
   gtk_overlay_set_measure_overlay (self->frame, GTK_WIDGET (self->avatar), TRUE);
 
   unity_greeter_apply_identity (self->avatar, self->name_label, self->user);
-  unity_greeter_apply_wallpaper (self->wallpaper, self->user, "card.png");
+  unity_greeter_apply_wallpaper (self->wallpaper, self->user);
 
   g_signal_connect_object (self->user, "changed",
                            G_CALLBACK (on_user_changed), self, G_CONNECT_DEFAULT);

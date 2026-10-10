@@ -106,7 +106,6 @@ on_user_changed (ActUser *user, gpointer data)
 {
   UnityGreeterUserSetupPage *self = data;
   unity_greeter_apply_identity (self->avatar, self->name_label, user);
-  unity_greeter_apply_wallpaper (self->wallpaper, user, "background.png");
 }
 
 static void
@@ -162,7 +161,7 @@ unity_greeter_user_setup_page_new (ActUser *user, GListModel *sessions)
   self->sessions = g_object_ref (sessions);
 
   unity_greeter_apply_identity (self->avatar, self->name_label, self->user);
-  unity_greeter_apply_wallpaper (self->wallpaper, self->user, "background.png");
+  unity_greeter_apply_wallpaper (self->wallpaper, self->user);
   g_signal_connect_object (self->user, "changed",
                            G_CALLBACK (on_user_changed), self, G_CONNECT_DEFAULT);
   validate (self);

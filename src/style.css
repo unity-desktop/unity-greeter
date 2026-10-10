@@ -13,8 +13,7 @@ statuspage > scrolledwindow > viewport > box > clamp > box > .title {
   font-size: 160%;
 }
 
-statuspage.compact > scrolledwindow > viewport > box {
-  margin-top: 0px;
-  margin-bottom: 12px;
-  border-spacing: 12px;
+
+.unity-greeter-background-dim {
+  background-color: rgba(0, 0, 0, 0.5);
 }

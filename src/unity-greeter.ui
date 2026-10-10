@@ -3,12 +3,12 @@
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
   <template class="UnityGreeter" parent="UnityWindow">
-    <property name="stylesheet">/org/unity/greeter/style.css</property>
     <property name="namespace">unity-greeter</property>
+    <property name="anchor">top|bottom|left|right</property>
     <property name="layer">overlay</property>
     <property name="exclusivity">ignore</property>
     <property name="keymode">exclusive</property>
-    <child>
+    <property name="content">
       <object class="AdwNavigationView" id="nav">
         <child>
           <object class="AdwNavigationPage">
@@ -44,6 +44,6 @@
           </object>
         </child>
       </object>
-    </child>
+    </property>
   </template>
 </interface>
