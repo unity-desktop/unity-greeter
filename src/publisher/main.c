@@ -13,16 +13,21 @@
 /* Runs in the user's session and keeps the files the greeter reads current. */
 
 static void
-publish (UnityGreeterWallpaper *wallpaper)
+on_monitor_changed (GdkMonitor *monitor, GParamSpec *pspec, gpointer user_data)
 {
   unity_greeter_outputs_publish ();
-  unity_greeter_wallpaper_publish (wallpaper);
+  unity_greeter_wallpaper_publish ();
 }
 
 static void
-on_monitor_changed (GdkMonitor *monitor, GParamSpec *pspec, gpointer user_data)
+watch_monitors (GListModel *monitors, guint position, guint added)
 {
-  publish (user_data);
+  for (guint i = position; i < position + added; i++)
+    {
+      g_autoptr (GdkMonitor) monitor = g_list_model_get_item (monitors, i);
+      g_signal_connect (monitor, "notify::scale", G_CALLBACK (on_monitor_changed), NULL);
+      g_signal_connect (monitor, "notify::geometry", G_CALLBACK (on_monitor_changed), NULL);
+    }
 }
 
 static void
@@ -32,15 +37,8 @@ on_monitors_changed (GListModel *monitors,
                      guint       added,
                      gpointer    user_data)
 {
-  for (guint i = 0; i < g_list_model_get_n_items (monitors); i++)
-    {
-      g_autoptr (GdkMonitor) monitor = g_list_model_get_item (monitors, i);
-      g_signal_handlers_disconnect_by_func (monitor, G_CALLBACK (on_monitor_changed), user_data);
-      g_signal_connect (monitor, "notify::scale", G_CALLBACK (on_monitor_changed), user_data);
-      g_signal_connect (monitor, "notify::geometry", G_CALLBACK (on_monitor_changed), user_data);
-    }
-
-  publish (user_data);
+  watch_monitors (monitors, position, added);
+  on_monitor_changed (NULL, NULL, NULL);
 }
 
 gint
@@ -48,10 +46,12 @@ main (void)
 {
   gtk_init ();
 
-  g_autoptr (UnityGreeterWallpaper) wallpaper = unity_greeter_wallpaper_new ();
+  unity_greeter_wallpaper_watch ();
+  unity_greeter_outputs_publish ();
+
   GListModel *monitors = gdk_display_get_monitors (gdk_display_get_default ());
-  g_signal_connect (monitors, "items-changed", G_CALLBACK (on_monitors_changed), wallpaper);
-  on_monitors_changed (monitors, 0, 0, 0, wallpaper);
+  watch_monitors (monitors, 0, g_list_model_get_n_items (monitors));
+  g_signal_connect (monitors, "items-changed", G_CALLBACK (on_monitors_changed), NULL);
 
   g_autoptr (GMainLoop) loop = g_main_loop_new (NULL, FALSE);
   g_main_loop_run (loop);
